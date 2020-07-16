@@ -4,7 +4,8 @@
   "description": "JavaScript SDK for Adzerk's Management API",
   "main": "index.js",
   "scripts": {
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "build": "tsc -p ./src"
   },
   "repository": {
     "type": "git",
@@ -44,5 +45,11 @@
   },
   "dependencies": {
     "node-fetch": "^2.6.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
