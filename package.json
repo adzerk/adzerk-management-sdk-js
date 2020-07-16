@@ -1,0 +1,49 @@
+{
+  "name": "adzerk-management-sdk",
+  "version": "1.0.0",
+  "description": "JavaScript SDK for Adzerk's Management API",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adzerk/adzerk-management-sdk-js.git"
+  },
+  "keywords": [
+    "adzerk",
+    "management"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/adzerk/adzerk-management-sdk-js/issues"
+  },
+  "homepage": "https://github.com/adzerk/adzerk-management-sdk-js#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.4",
+    "@types/node": "^14.0.23",
+    "@types/node-fetch": "^2.5.7",
+    "husky": "^4.2.5",
+    "jest": "^26.1.0",
+    "lint-staged": "^10.2.11",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.6"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  }
+}
