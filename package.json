@@ -1,8 +1,8 @@
 {
-  "name": "adzerk-management-sdk",
+  "name": "@adzerk/management-sdk",
   "version": "1.0.0",
   "description": "JavaScript SDK for Adzerk's Management API",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "jest --passWithNoTests",
     "build": "tsc -p ./src"
