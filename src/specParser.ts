@@ -58,7 +58,7 @@ export const buildSpecificationList = (
   ];
 };
 
-export const fetchSpecifications = async (
+const fetchSpecifications = async (
   specList: Array<string>
 ): Promise<Array<OpenAPIV3.Document>> => {
   let promises = specList.map((s) => SwaggerParser.bundle(s));

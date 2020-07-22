@@ -48,8 +48,10 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.0",
     "camelcase": "^6.0.0",
+    "date-fns": "^2.15.0",
     "deepmerge": "^4.2.2",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "strickland": "^2.2.0"
   },
   "jest": {
     "testEnvironment": "node"
