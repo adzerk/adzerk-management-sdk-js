@@ -1,21 +1,26 @@
 import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
+import { Validator } from "strickland";
 
 import integer from "./integer";
 import boolean from "./boolean";
 import number from "./number";
+import string from "./string";
+import object from "./object";
+import array from "./array";
 
 export default {
   integer,
   boolean,
   number,
+  string,
+  object,
+  array,
 };
 
-export interface Validator {
-  (value?: any): boolean | { isValid: boolean; message: string };
-}
-
 export interface ValidatorFactory {
-  (schema: OpenAPIV3.SchemaObject, propertyName: string): Array<Validator>;
+  (schema: OpenAPIV3.SchemaObject, propertyName: string):
+    | Validator
+    | Array<Validator>;
 }
 
 export const wrapNullable = (

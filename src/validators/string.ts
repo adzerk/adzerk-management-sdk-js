@@ -1,8 +1,9 @@
 import camelcase from "camelcase";
 import isValid from "date-fns/isValid";
 import parseISO from "date-fns/parseISO";
+import { Validator } from "strickland";
 
-import { ValidatorFactory, Validator, wrapNullable } from "./";
+import { ValidatorFactory, wrapNullable } from "./";
 import { isStream } from "../utils";
 
 const factory: ValidatorFactory = (schema, propertyName) => {

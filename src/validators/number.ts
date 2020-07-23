@@ -1,5 +1,6 @@
-import { ValidatorFactory, Validator, wrapNullable } from "./";
 import camelcase from "camelcase";
+import { Validator } from "strickland";
+import { ValidatorFactory, wrapNullable } from "./";
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);
