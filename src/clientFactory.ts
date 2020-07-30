@@ -220,11 +220,29 @@ export const buildClient = async (
     async run(obj, op, body, qOpts) {
       let operation = spec[obj][op];
       let rawBaseUrl = operation.url;
-      let baseUrl = operation.pathParameters.reduce(
-        (url, parameter) =>
-          url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]),
-        rawBaseUrl
-      );
+      let baseUrl = operation.pathParameters.reduce((url, parameter) => {
+        if (parameter.schema != undefined) {
+          let validator = validatorFactory(
+            parameter.schema as OpenAPIV3.SchemaObject,
+            parameter.name
+          );
+          let validationResult = validate(
+            validator,
+            body[camelcase(parameter.name)]
+          );
+          if (
+            (isComplexValidationResult(validationResult) &&
+              !validationResult.isValid) ||
+            (isBooleanValidationResult(validationResult) && !validationResult)
+          ) {
+            throw `Value for ${parameter.name} is invalid`;
+          }
+        }
+        return url.replace(
+          `{${parameter.name}}`,
+          body[camelcase(parameter.name)]
+        );
+      }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
       let href = addQueryParameters(
         url,
