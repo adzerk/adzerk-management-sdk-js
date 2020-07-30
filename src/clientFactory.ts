@@ -130,9 +130,10 @@ const buildRequestArgs = async (
   let requestArgs: RequestInit = { headers, method, agent };
   let schema = operation.bodySchema;
 
-  if (schema == undefined) {
+  if (schema == undefined || !schema) {
     return requestArgs;
   }
+
   if (body == undefined) {
     throw "Request requires a request body to be specified";
   }
