@@ -43,13 +43,6 @@ export interface SecuritySchema {
   [key: string]: OpenAPIV3.ApiKeySecurityScheme;
 }
 
-export const latestSpecifications: Array<string> = [
-  "../adzerk-api-specification/management/advertiser.yaml",
-  "../adzerk-api-specification/management/creative-template.yaml",
-  "../adzerk-api-specification/management/creative.yaml",
-  "../adzerk-api-specification/management/flight.yaml",
-];
-
 export const buildSpecificationList = (
   version: string = "master",
   basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
