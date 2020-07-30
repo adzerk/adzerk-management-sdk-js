@@ -3,3 +3,5 @@ export interface LoggerFunc {
 }
 
 export { buildSpecificationList } from "./specParser";
+
+export { buildClient } from "./clientFactory";
