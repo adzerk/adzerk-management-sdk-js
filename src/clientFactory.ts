@@ -1,5 +1,6 @@
 import camelcase from "camelcase";
-import http from "http";
+import fetch, { RequestInit, HeadersInit } from "node-fetch";
+import http, { request } from "http";
 import https from "https";
 import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
 import validate from "strickland";
@@ -16,6 +17,12 @@ import {
 import validatorFactory from "./validatorFactory";
 import propertyMapperFactory from "./propertyMapperFactory";
 import bodySerializerFactory from "./bodySerializerFactory";
+import {
+  isComplexValidationResult,
+  isBooleanValidationResult,
+} from "./validators";
+import FormData from "form-data";
+import { convertKeysToCamelcase } from "./utils";
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ["update"],
@@ -75,7 +82,11 @@ const addQueryParameters = (
     }
 
     let validationResult = validate(validator, body[cn]);
-    if (!validationResult.isValid) {
+    if (
+      (isComplexValidationResult(validationResult) &&
+        !validationResult.isValid) ||
+      (isBooleanValidationResult(validationResult) && !validationResult)
+    ) {
       throw `Value for ${cn} is invalid`;
     }
 
@@ -113,9 +124,10 @@ const buildRequestArgs = async (
   obj: string,
   op: string,
   body: any,
-  operation: Operation
+  operation: Operation,
+  logger: LoggerFunc
 ) => {
-  let requestArgs = { headers, method, agent };
+  let requestArgs: RequestInit = { headers, method, agent };
   let schema = operation.bodySchema;
 
   if (schema == undefined) {
@@ -140,7 +152,53 @@ const buildRequestArgs = async (
 
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
-  // let validator = validatorFactory(operation.bodySchema[contentType], '');
+  let validator = validatorFactory(schema[contentType], "");
+  let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
+    schema: obj,
+    operation: op,
+  });
+  let mapped = propertyMapper(body);
+
+  let validationResult = validate(validator, mapped);
+
+  if (
+    isComplexValidationResult(validationResult) &&
+    !validationResult.isValid
+  ) {
+    if (validationResult.form == undefined) {
+      logger("error", "Request body is invalid");
+    } else {
+      logger(
+        "error",
+        "Request body is invalid",
+        validationResult.form.validationErrors
+      );
+    }
+
+    throw "Request body is invalid";
+  }
+
+  if (isBooleanValidationResult(validationResult) && !validationResult) {
+    logger("error", "Request body is invalid");
+  }
+
+  requestArgs.body = await serializer(mapped);
+
+  if (isFormData(requestArgs.body)) {
+    let bh = requestArgs.body.getHeaders();
+    if (requestArgs.headers == undefined) {
+      requestArgs.headers = { "Content-Type": bh["content-type"] };
+    } else {
+      (requestArgs.headers as { [key: string]: string })["Content-Type"] =
+        bh["content-type"];
+    }
+  } else {
+    (requestArgs.headers as { [key: string]: string })[
+      "content-type"
+    ] = contentType;
+  }
+
+  return requestArgs;
 };
 
 export const buildClient = async (
@@ -158,7 +216,7 @@ export const buildClient = async (
   });
 
   return {
-    async run(obj, op, body, opts) {
+    async run(obj, op, body, qOpts) {
       let operation = spec[obj][op];
       let rawBaseUrl = operation.url;
       let baseUrl = operation.pathParameters.reduce(
@@ -184,8 +242,70 @@ export const buildClient = async (
         obj,
         op,
         body,
-        operation
+        operation,
+        logger
+      );
+
+      let r = await fetch(url, requestArgs);
+      if (!r.ok) {
+        logger("error", "API Request failed", r);
+      }
+
+      if (op !== "filter") {
+        return convertKeysToCamelcase(await r.json());
+      }
+
+      let callback =
+        (qOpts && qOpts.callback) ||
+        ((acc: Array<any>, o: any) => (acc.push(o), acc));
+
+      return convertKeysToCamelcase(
+        await handleResponseStream(
+          r.body,
+          callback,
+          (qOpts && qOpts.initialValue) || []
+        )
       );
     },
   };
 };
+
+let handleResponseStream = async <TCurr, TAcc>(
+  body: NodeJS.ReadableStream,
+  callback: any,
+  initialValue: TAcc
+) => {
+  let buffer = Buffer.alloc(0);
+
+  return new Promise((resolve, reject) => {
+    let accumulator = initialValue;
+    body.on("data", (d) => {
+      buffer = Buffer.concat([buffer, d]);
+      try {
+        buffer
+          .toString()
+          .trim()
+          .split("\n")
+          .forEach((l) => {
+            try {
+              let obj = convertKeysToCamelcase(JSON.parse(l));
+              accumulator = callback(accumulator, obj);
+              buffer = Buffer.alloc(0);
+            } catch {
+              buffer = Buffer.from(l);
+              return;
+            }
+          });
+      } catch {}
+    });
+
+    body.on("close", () => resolve(accumulator));
+
+    body.on("finish", () => resolve(accumulator));
+
+    body.on("error", (e) => reject(e));
+  });
+};
+
+const isFormData = (d: any): d is FormData =>
+  (d as FormData).getHeaders !== undefined;

@@ -43,6 +43,8 @@ const bodySerializerFactory = (contentType: string) => {
         await Promise.all(promises);
         return form;
       };
+    default:
+      return async (body: any) => undefined;
   }
 };
 

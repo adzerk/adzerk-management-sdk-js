@@ -1,5 +1,9 @@
 import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import { Validator } from "strickland";
+import {
+  Validator,
+  ValidationResult,
+  ComplexValidationResult,
+} from "strickland";
 
 import integer from "./integer";
 import boolean from "./boolean";
@@ -45,3 +49,15 @@ export const wrapNullable = (
   }
   return validator(v);
 };
+
+export function isComplexValidationResult(
+  result: ValidationResult
+): result is ComplexValidationResult {
+  return (result as ComplexValidationResult).isValid != undefined;
+}
+
+export function isBooleanValidationResult(
+  result: ValidationResult
+): result is boolean {
+  return typeof result === "boolean";
+}

@@ -26,9 +26,7 @@ export interface Contract {
 }
 
 export interface BodySchema {
-  [contentType: string]: {
-    schema: OpenAPIV3.SchemaObject;
-  };
+  [contentType: string]: OpenAPIV3.SchemaObject;
 }
 
 export interface Operation {
