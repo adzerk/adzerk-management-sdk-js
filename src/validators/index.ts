@@ -8,19 +8,28 @@ import string from "./string";
 import object from "./object";
 import array from "./array";
 
-export default {
+export interface ValidatorMap {
+  [key: string]: ValidatorFactory;
+}
+
+let validatorMap: ValidatorMap = {
   integer,
   boolean,
   number,
   string,
   object,
   array,
+  null: (_: any) => (_: any) => true,
 };
 
+export default validatorMap;
+
 export interface ValidatorFactory {
-  (schema: OpenAPIV3.SchemaObject, propertyName: string):
-    | Validator
-    | Array<Validator>;
+  (
+    schema: OpenAPIV3.SchemaObject,
+    propertyName: string,
+    factory?: ValidatorFactory
+  ): Validator | Array<Validator>;
 }
 
 export const wrapNullable = (

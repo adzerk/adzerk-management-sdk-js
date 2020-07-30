@@ -9,34 +9,40 @@ type VerbRecord<K extends keyof any, T> = {
 
 type Verb = "post" | "get" | "patch" | "put" | "delete";
 
+export type Method = "POST" | "GET" | "PATCH" | "PUT" | "DELETE";
+
 const verbToMethod = {
   post: "POST",
   get: "GET",
   patch: "PATCH",
   put: "PUT",
   delete: "DELETE",
-} as VerbRecord<Verb, "POST" | "GET" | "PATCH" | "PUT" | "DELETE">;
+} as VerbRecord<Verb, Method>;
 
-interface Contract {
+export interface Contract {
   [key: string]: {
-    [operationId: string]: {
-      method: string;
-      url: string;
-      pathParameters: Array<OpenAPIV3.ParameterObject>;
-      queryParameters: Array<OpenAPIV3.ParameterObject>;
-      headerParameters: Array<OpenAPIV3.ParameterObject>;
-      securitySchemes: Array<string>;
-      bodySchema: {
-        [contentType: string]: {
-          schema: OpenAPIV3.SchemaObject;
-        };
-      };
-    };
+    [operationId: string]: Operation;
   };
 }
 
-interface SecuritySchema {
-  [key: string]: OpenAPIV3.SecuritySchemeObject;
+export interface BodySchema {
+  [contentType: string]: {
+    schema: OpenAPIV3.SchemaObject;
+  };
+}
+
+export interface Operation {
+  method: Method;
+  url: string;
+  pathParameters: Array<OpenAPIV3.ParameterObject>;
+  queryParameters: Array<OpenAPIV3.ParameterObject>;
+  headerParameters: Array<OpenAPIV3.ParameterObject>;
+  securitySchemes: Array<string>;
+  bodySchema?: BodySchema;
+}
+
+export interface SecuritySchema {
+  [key: string]: OpenAPIV3.ApiKeySecurityScheme;
 }
 
 export const latestSpecifications: Array<string> = [

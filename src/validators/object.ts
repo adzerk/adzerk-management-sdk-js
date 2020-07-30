@@ -3,7 +3,11 @@ import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-type
 import camelcase from "camelcase";
 import { ValidatorFactory } from ".";
 
-const factory: ValidatorFactory = (schema, _propertyName): Validator => {
+const factory: ValidatorFactory = (schema, _propertyName, pf): Validator => {
+  if (pf == undefined) {
+    throw "Parent Factory for Object Validator Factory must not be null";
+  }
+
   let requiredProperties = schema.required || [];
   if (!schema.properties) {
     return (_) => true;
@@ -14,7 +18,7 @@ const factory: ValidatorFactory = (schema, _propertyName): Validator => {
       return agg;
     }
     let property = schema.properties[ck] as OpenAPIV3.SchemaObject;
-    let validator = factory(property, ck);
+    let validator = pf(property, ck);
 
     agg[ck] = !requiredProperties.includes(ck)
       ? validator
