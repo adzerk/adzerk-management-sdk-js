@@ -1,3 +1,4 @@
+import flatMap from 'array.prototype.flatmap';
 import camelcase from 'camelcase';
 import merge from 'deepmerge';
 import { OpenAPIV3 } from 'openapi-types';
@@ -68,9 +69,10 @@ export const parseSpecifications = async (
   specList: Array<string> = buildSpecificationList()
 ): Promise<[Contract, SecuritySchema]> => {
   let specs = await fetchSpecifications(specList);
-  let contract = specs
-    .flatMap((r) => r.tags || [])
-    .reduce((agg, v) => ((agg[camelcase(v.name)] = {}), agg), {} as Contract);
+  let contract = flatMap(specs, (r: OpenAPIV3.Document) => r.tags || []).reduce(
+    (agg: Contract, v: OpenAPIV3.TagObject) => ((agg[camelcase(v.name)] = {}), agg),
+    {} as Contract
+  );
 
   let paths = specs.reduce((agg, p) => merge(agg, p.paths), {} as OpenAPIV3.PathsObject);
   let components = specs.reduce(
