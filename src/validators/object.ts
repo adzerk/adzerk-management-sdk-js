@@ -1,11 +1,11 @@
-import { form, Validator } from "strickland";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import camelcase from "camelcase";
-import { ValidatorFactory } from ".";
+import { form, Validator } from 'strickland';
+import { OpenAPIV3 } from 'openapi-types';
+import camelcase from 'camelcase';
+import { ValidatorFactory } from '.';
 
 const factory: ValidatorFactory = (schema, _propertyName, pf): Validator => {
   if (pf == undefined) {
-    throw "Parent Factory for Object Validator Factory must not be null";
+    throw 'Parent Factory for Object Validator Factory must not be null';
   }
 
   let requiredProperties = schema.required || [];

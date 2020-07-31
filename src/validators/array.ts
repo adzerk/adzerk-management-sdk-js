@@ -1,11 +1,11 @@
-import camelcase from "camelcase";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import { ValidatorFactory, wrapNullable } from "./";
+import camelcase from 'camelcase';
+import { OpenAPIV3 } from 'openapi-types';
+import { ValidatorFactory, wrapNullable } from './';
 import validate, {
   ValidationResult,
   ComplexValidationResult,
   Validator,
-} from "strickland";
+} from 'strickland';
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);
@@ -28,14 +28,11 @@ const factory: ValidatorFactory = (schema, propertyName) => {
 
   let itemValidator = factory(
     (schema as OpenAPIV3.ArraySchemaObject).items as OpenAPIV3.SchemaObject,
-    "item"
+    'item'
   );
 
   validators.push((v: Array<any>) => {
-    let [isValid, validationResults]: [
-      boolean,
-      Array<ValidationResult>
-    ] = v.reduce(
+    let [isValid, validationResults]: [boolean, Array<ValidationResult>] = v.reduce(
       ([iv, rs]: [boolean, Array<ValidationResult>], i) => {
         let vr: ValidationResult = validate(itemValidator, i);
         rs.push(vr);
@@ -48,7 +45,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
       isValid || {
         isValid: false,
         validationResults,
-        message: "At least one child is invalid",
+        message: 'At least one child is invalid',
       }
     );
   });

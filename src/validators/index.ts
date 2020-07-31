@@ -1,16 +1,12 @@
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import {
-  Validator,
-  ValidationResult,
-  ComplexValidationResult,
-} from "strickland";
+import { OpenAPIV3 } from 'openapi-types';
+import { Validator, ValidationResult, ComplexValidationResult } from 'strickland';
 
-import integer from "./integer";
-import boolean from "./boolean";
-import number from "./number";
-import string from "./string";
-import object from "./object";
-import array from "./array";
+import integer from './integer';
+import boolean from './boolean';
+import number from './number';
+import string from './string';
+import object from './object';
+import array from './array';
 
 export interface ValidatorMap {
   [key: string]: ValidatorFactory;
@@ -29,11 +25,9 @@ let validatorMap: ValidatorMap = {
 export default validatorMap;
 
 export interface ValidatorFactory {
-  (
-    schema: OpenAPIV3.SchemaObject,
-    propertyName: string,
-    factory?: ValidatorFactory
-  ): Validator | Array<Validator>;
+  (schema: OpenAPIV3.SchemaObject, propertyName: string, factory?: ValidatorFactory):
+    | Validator
+    | Array<Validator>;
 }
 
 export const wrapNullable = (
@@ -56,8 +50,6 @@ export function isComplexValidationResult(
   return (result as ComplexValidationResult).isValid != undefined;
 }
 
-export function isBooleanValidationResult(
-  result: ValidationResult
-): result is boolean {
-  return typeof result === "boolean";
+export function isBooleanValidationResult(result: ValidationResult): result is boolean {
+  return typeof result === 'boolean';
 }

@@ -1,33 +1,31 @@
-import camelcase from "camelcase";
-import format from "date-fns/format";
-import parseISO from "date-fns/parseISO";
-import formatRFC3339 from "date-fns/formatRFC3339";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import fs from "fs";
-import { LoggerFunc } from ".";
+import camelcase from 'camelcase';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
+import formatRFC3339 from 'date-fns/formatRFC3339';
+import { OpenAPIV3 } from 'openapi-types';
+import fs from 'fs';
+import { LoggerFunc } from '.';
 
-let factory = (
-  schema: OpenAPIV3.SchemaObject,
-  logger: LoggerFunc,
-  meta: any = {}
-) => (obj: any) => {
-  logger("debug", "Building mapper", {
+let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {}) => (
+  obj: any
+) => {
+  logger('debug', 'Building mapper', {
     type: schema.type,
     format: schema.format,
   });
 
   if (
-    schema.type !== "object" &&
-    schema.type !== "array" &&
+    schema.type !== 'object' &&
+    schema.type !== 'array' &&
     !(
-      schema.type === "string" &&
-      ["binary", "date", "date-time"].includes(schema.format || "")
+      schema.type === 'string' &&
+      ['binary', 'date', 'date-time'].includes(schema.format || '')
     )
   ) {
     return obj;
   }
 
-  if (schema.type == "array") {
+  if (schema.type == 'array') {
     if (!schema.items) {
       return obj;
     }
@@ -35,7 +33,7 @@ let factory = (
     return obj.map((o: any) => f(o));
   }
 
-  if (schema.type === "string" && schema.format === "binary") {
+  if (schema.type === 'string' && schema.format === 'binary') {
     try {
       let stat = fs.lstatSync(obj);
 
@@ -47,19 +45,19 @@ let factory = (
     return obj;
   }
 
-  logger("debug", "Parsing property", {
+  logger('debug', 'Parsing property', {
     type: schema.type,
     format: schema.format,
   });
 
-  if (schema.type === "string" && schema.format === "date") {
-    logger("debug", "Parsing date when mapping");
-    let d = typeof obj === "string" ? parseISO(obj) : obj;
-    return format(d, "yyyy-MM-dd");
+  if (schema.type === 'string' && schema.format === 'date') {
+    logger('debug', 'Parsing date when mapping');
+    let d = typeof obj === 'string' ? parseISO(obj) : obj;
+    return format(d, 'yyyy-MM-dd');
   }
 
-  if (schema.type === "string" && schema.format === "date-time") {
-    let d = typeof obj === "string" ? parseISO(obj) : obj;
+  if (schema.type === 'string' && schema.format === 'date-time') {
+    let d = typeof obj === 'string' ? parseISO(obj) : obj;
     return formatRFC3339(d);
   }
 
@@ -68,18 +66,16 @@ let factory = (
   }
 
   let schemaPropertiesKeys = Object.keys(schema.properties);
-  let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) =>
-    camelcase(k)
-  );
+  let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) => camelcase(k));
 
   let unmappedKeys = Object.keys(obj).filter(
     (k) => !camelCasedSchemaPropertiesKeys.includes(k)
   );
   unmappedKeys.forEach((k) => {
     logger(
-      "warning",
+      'warning',
       `Property ${k} is not supported by this operation, it will be ignored`,
-      { ...meta, file: "properMapper.js", line: 15 }
+      { ...meta, file: 'properMapper.js', line: 15 }
     );
   });
 
@@ -90,9 +86,7 @@ let factory = (
       return agg;
     }
 
-    let ls: OpenAPIV3.SchemaObject = schema.properties[
-      k
-    ] as OpenAPIV3.SchemaObject;
+    let ls: OpenAPIV3.SchemaObject = schema.properties[k] as OpenAPIV3.SchemaObject;
 
     if (obj[c] == undefined && ls.default != undefined) {
       agg[k] = ls.default;
@@ -105,10 +99,10 @@ let factory = (
 
     if (ls.deprecated) {
       logger(
-        "warning",
+        'warning',
         `Property ${k} is deprecated and may be removed completely in the future`,
         {
-          file: "propertyMapper.js",
+          file: 'propertyMapper.js',
           line: 27,
         }
       );

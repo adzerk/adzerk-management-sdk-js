@@ -1,6 +1,6 @@
-import { every } from "strickland";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import validatorMap, { ValidatorFactory } from "./validators";
+import { every } from 'strickland';
+import { OpenAPIV3 } from 'openapi-types';
+import validatorMap, { ValidatorFactory } from './validators';
 
 const factory: ValidatorFactory = (
   schema: OpenAPIV3.SchemaObject,

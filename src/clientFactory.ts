@@ -1,35 +1,32 @@
-import camelcase from "camelcase";
-import fetch, { RequestInit, HeadersInit } from "node-fetch";
-import http, { request } from "http";
-import https from "https";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import validate from "strickland";
-import { URL } from "url";
+import camelcase from 'camelcase';
+import fetch, { RequestInit, HeadersInit } from 'node-fetch';
+import http, { request } from 'http';
+import https from 'https';
+import { OpenAPIV3 } from 'openapi-types';
+import validate from 'strickland';
+import { URL } from 'url';
 
-import { LoggerFunc } from ".";
+import { LoggerFunc } from '.';
 import {
   parseSpecifications,
   SecuritySchema,
   Operation,
   Method,
   BodySchema,
-} from "./specParser";
-import validatorFactory from "./validatorFactory";
-import propertyMapperFactory from "./propertyMapperFactory";
-import bodySerializerFactory from "./bodySerializerFactory";
-import {
-  isComplexValidationResult,
-  isBooleanValidationResult,
-} from "./validators";
-import FormData from "form-data";
-import { convertKeysToCamelcase } from "./utils";
+} from './specParser';
+import validatorFactory from './validatorFactory';
+import propertyMapperFactory from './propertyMapperFactory';
+import bodySerializerFactory from './bodySerializerFactory';
+import { isComplexValidationResult, isBooleanValidationResult } from './validators';
+import FormData from 'form-data';
+import { convertKeysToCamelcase } from './utils';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
-  advertiser: ["update"],
+  advertiser: ['update'],
 };
 
 export interface ClientFactoryOptions {
-  protocol?: "http" | "https";
+  protocol?: 'http' | 'https';
   host?: string;
   port?: number;
   logger?: LoggerFunc;
@@ -67,10 +64,7 @@ const addQueryParameters = (
       continue;
     }
 
-    let validator = validatorFactory(
-      p.schema as OpenAPIV3.SchemaObject,
-      p.name
-    );
+    let validator = validatorFactory(p.schema as OpenAPIV3.SchemaObject, p.name);
     let cn = camelcase(p.name);
     let isOmitted = !body || !body[cn];
 
@@ -83,17 +77,13 @@ const addQueryParameters = (
 
     let validationResult = validate(validator, body[cn]);
     if (
-      (isComplexValidationResult(validationResult) &&
-        !validationResult.isValid) ||
+      (isComplexValidationResult(validationResult) && !validationResult.isValid) ||
       (isBooleanValidationResult(validationResult) && !validationResult)
     ) {
       throw `Value for ${cn} is invalid`;
     }
 
-    let mapper = propertyMapperFactory(
-      p.schema as OpenAPIV3.SchemaObject,
-      logger
-    );
+    let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
     url.searchParams.append(p.name, mapper(body[cn]).toString());
     delete body[cn];
   }
@@ -108,7 +98,7 @@ const buildHeaders = (
   existingHeaders: Headers = {}
 ) => {
   return operation.securitySchemes.reduce((headers, ss) => {
-    if (!securitySchemes[ss] || securitySchemes[ss].in !== "header") {
+    if (!securitySchemes[ss] || securitySchemes[ss].in !== 'header') {
       return headers;
     }
     headers[securitySchemes[ss].name] = keys[ss];
@@ -135,17 +125,14 @@ const buildRequestArgs = async (
   }
 
   if (body == undefined) {
-    throw "Request requires a request body to be specified";
+    throw 'Request requires a request body to be specified';
   }
 
-  if (
-    fetchBeforeSendOperations[obj] &&
-    fetchBeforeSendOperations[obj].includes(op)
-  ) {
+  if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     let key = `${obj}Id`;
     let getBody = { [key]: body[key] };
-    let response = c.run(obj, "get", getBody);
+    let response = c.run(obj, 'get', getBody);
     delete body[key];
 
     body = { ...response, ...body };
@@ -153,7 +140,7 @@ const buildRequestArgs = async (
 
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
-  let validator = validatorFactory(schema[contentType], "");
+  let validator = validatorFactory(schema[contentType], '');
   let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
     schema: obj,
     operation: op,
@@ -162,25 +149,18 @@ const buildRequestArgs = async (
 
   let validationResult = validate(validator, mapped);
 
-  if (
-    isComplexValidationResult(validationResult) &&
-    !validationResult.isValid
-  ) {
+  if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
     if (validationResult.form == undefined) {
-      logger("error", "Request body is invalid");
+      logger('error', 'Request body is invalid');
     } else {
-      logger(
-        "error",
-        "Request body is invalid",
-        validationResult.form.validationErrors
-      );
+      logger('error', 'Request body is invalid', validationResult.form.validationErrors);
     }
 
-    throw "Request body is invalid";
+    throw 'Request body is invalid';
   }
 
   if (isBooleanValidationResult(validationResult) && !validationResult) {
-    logger("error", "Request body is invalid");
+    logger('error', 'Request body is invalid');
   }
 
   requestArgs.body = await serializer(mapped);
@@ -188,15 +168,13 @@ const buildRequestArgs = async (
   if (isFormData(requestArgs.body)) {
     let bh = requestArgs.body.getHeaders();
     if (requestArgs.headers == undefined) {
-      requestArgs.headers = { "Content-Type": bh["content-type"] };
+      requestArgs.headers = { 'Content-Type': bh['content-type'] };
     } else {
-      (requestArgs.headers as { [key: string]: string })["Content-Type"] =
-        bh["content-type"];
+      (requestArgs.headers as { [key: string]: string })['Content-Type'] =
+        bh['content-type'];
     }
   } else {
-    (requestArgs.headers as { [key: string]: string })[
-      "content-type"
-    ] = contentType;
+    (requestArgs.headers as { [key: string]: string })['content-type'] = contentType;
   }
 
   return requestArgs;
@@ -208,11 +186,11 @@ export const buildClient = async (
 ): Promise<Client> => {
   let [spec, securitySchemas] = await parseSpecifications(opts.specifications);
   let logger = opts.logger || noop;
-  let protocol = opts.protocol || "https";
-  let host = opts.host || "api.adzerk.net";
+  let protocol = opts.protocol || 'https';
+  let host = opts.host || 'api.adzerk.net';
   let port = opts.port || 443;
 
-  let agent = new (protocol === "https" ? https : http).Agent({
+  let agent = new (protocol === 'https' ? https : http).Agent({
     keepAlive: true,
   });
 
@@ -226,30 +204,18 @@ export const buildClient = async (
             parameter.schema as OpenAPIV3.SchemaObject,
             parameter.name
           );
-          let validationResult = validate(
-            validator,
-            body[camelcase(parameter.name)]
-          );
+          let validationResult = validate(validator, body[camelcase(parameter.name)]);
           if (
-            (isComplexValidationResult(validationResult) &&
-              !validationResult.isValid) ||
+            (isComplexValidationResult(validationResult) && !validationResult.isValid) ||
             (isBooleanValidationResult(validationResult) && !validationResult)
           ) {
             throw `Value for ${parameter.name} is invalid`;
           }
         }
-        return url.replace(
-          `{${parameter.name}}`,
-          body[camelcase(parameter.name)]
-        );
+        return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
       }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
-      let href = addQueryParameters(
-        url,
-        operation.queryParameters,
-        body,
-        logger
-      );
+      let href = addQueryParameters(url, operation.queryParameters, body, logger);
       let headers = buildHeaders(securitySchemas, operation, {
         ApiKeyAuth: adzerkApiKey,
       });
@@ -267,23 +233,18 @@ export const buildClient = async (
 
       let r = await fetch(url, requestArgs);
       if (!r.ok) {
-        logger("error", "API Request failed", r);
+        logger('error', 'API Request failed', r);
       }
 
-      if (op !== "filter") {
+      if (op !== 'filter') {
         return convertKeysToCamelcase(await r.json());
       }
 
       let callback =
-        (qOpts && qOpts.callback) ||
-        ((acc: Array<any>, o: any) => (acc.push(o), acc));
+        (qOpts && qOpts.callback) || ((acc: Array<any>, o: any) => (acc.push(o), acc));
 
       return convertKeysToCamelcase(
-        await handleResponseStream(
-          r.body,
-          callback,
-          (qOpts && qOpts.initialValue) || []
-        )
+        await handleResponseStream(r.body, callback, (qOpts && qOpts.initialValue) || [])
       );
     },
   };
@@ -298,13 +259,13 @@ let handleResponseStream = async <TCurr, TAcc>(
 
   return new Promise((resolve, reject) => {
     let accumulator = initialValue;
-    body.on("data", (d) => {
+    body.on('data', (d) => {
       buffer = Buffer.concat([buffer, d]);
       try {
         buffer
           .toString()
           .trim()
-          .split("\n")
+          .split('\n')
           .forEach((l) => {
             try {
               let obj = convertKeysToCamelcase(JSON.parse(l));
@@ -318,13 +279,12 @@ let handleResponseStream = async <TCurr, TAcc>(
       } catch {}
     });
 
-    body.on("close", () => resolve(accumulator));
+    body.on('close', () => resolve(accumulator));
 
-    body.on("finish", () => resolve(accumulator));
+    body.on('finish', () => resolve(accumulator));
 
-    body.on("error", (e) => reject(e));
+    body.on('error', (e) => reject(e));
   });
 };
 
-const isFormData = (d: any): d is FormData =>
-  (d as FormData).getHeaders !== undefined;
+const isFormData = (d: any): d is FormData => (d as FormData).getHeaders !== undefined;
