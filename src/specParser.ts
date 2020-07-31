@@ -1,22 +1,22 @@
-import camelcase from "camelcase";
-import merge from "deepmerge";
-import { OpenAPIV3 } from "@apidevtools/swagger-parser/node_modules/openapi-types";
-import SwaggerParser from "@apidevtools/swagger-parser";
+import camelcase from 'camelcase';
+import merge from 'deepmerge';
+import { OpenAPIV3 } from 'openapi-types';
+import SwaggerParser from '@apidevtools/swagger-parser';
 
 type VerbRecord<K extends keyof any, T> = {
   [P in K]: T;
 };
 
-type Verb = "post" | "get" | "patch" | "put" | "delete";
+type Verb = 'post' | 'get' | 'patch' | 'put' | 'delete';
 
-export type Method = "POST" | "GET" | "PATCH" | "PUT" | "DELETE";
+export type Method = 'POST' | 'GET' | 'PATCH' | 'PUT' | 'DELETE';
 
 const verbToMethod = {
-  post: "POST",
-  get: "GET",
-  patch: "PATCH",
-  put: "PUT",
-  delete: "DELETE",
+  post: 'POST',
+  get: 'GET',
+  patch: 'PATCH',
+  put: 'PUT',
+  delete: 'DELETE',
 } as VerbRecord<Verb, Method>;
 
 export interface Contract {
@@ -44,7 +44,7 @@ export interface SecuritySchema {
 }
 
 export const buildSpecificationList = (
-  version: string = "master",
+  version: string = 'master',
   basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
 ): Array<string> => {
   return [
@@ -58,7 +58,7 @@ export const buildSpecificationList = (
 const fetchSpecifications = async (
   specList: Array<string>
 ): Promise<Array<OpenAPIV3.Document>> => {
-  let promises = specList.map((s) => SwaggerParser.bundle(s));
+  let promises = specList.map((s) => SwaggerParser.dereference(s));
   let results = await Promise.all(promises);
 
   return results as Array<OpenAPIV3.Document>;
@@ -72,10 +72,7 @@ export const parseSpecifications = async (
     .flatMap((r) => r.tags || [])
     .reduce((agg, v) => ((agg[camelcase(v.name)] = {}), agg), {} as Contract);
 
-  let paths = specs.reduce(
-    (agg, p) => merge(agg, p.paths),
-    {} as OpenAPIV3.PathsObject
-  );
+  let paths = specs.reduce((agg, p) => merge(agg, p.paths), {} as OpenAPIV3.PathsObject);
   let components = specs.reduce(
     (agg, p) => merge(agg, p.components || {}),
     {} as OpenAPIV3.ComponentsObject
@@ -86,9 +83,7 @@ export const parseSpecifications = async (
 
     let pathParameters = p.parameters || [];
 
-    for (let verb of Object.keys(p).filter((k) => k !== "parameters") as Array<
-      Verb
-    >) {
+    for (let verb of Object.keys(p).filter((k) => k !== 'parameters') as Array<Verb>) {
       let o = (p as any)[verb] as OpenAPIV3.OperationObject;
 
       (o.tags || []).forEach((t) => {
@@ -96,7 +91,11 @@ export const parseSpecifications = async (
         let allParameters = [...pathParameters, ...(o.parameters || [])];
         let requestBody = o.requestBody as OpenAPIV3.RequestBodyObject;
 
-        contract[k][o.operationId || ""] = {
+        if (contract[k] == undefined) {
+          contract[k] = {};
+        }
+
+        contract[k][o.operationId || ''] = {
           method: verbToMethod[verb],
           url: key,
           pathParameters: [],
@@ -117,14 +116,14 @@ export const parseSpecifications = async (
 
         for (var p of allParameters as Array<OpenAPIV3.ParameterObject>) {
           switch (p.in) {
-            case "path":
-              contract[k][o.operationId || ""].pathParameters.push(p);
+            case 'path':
+              contract[k][o.operationId || ''].pathParameters.push(p);
               break;
-            case "query":
-              contract[k][o.operationId || ""].queryParameters.push(p);
+            case 'query':
+              contract[k][o.operationId || ''].queryParameters.push(p);
               break;
-            case "header":
-              contract[k][o.operationId || ""].headerParameters.push(p);
+            case 'header':
+              contract[k][o.operationId || ''].headerParameters.push(p);
               break;
             default:
               throw `Unsupported parameter type in ${o.operationId}`;
