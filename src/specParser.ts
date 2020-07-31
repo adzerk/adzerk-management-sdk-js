@@ -103,7 +103,7 @@ export const parseSpecifications = async (
           pathParameters: [],
           queryParameters: [],
           headerParameters: [],
-          securitySchemes: (o.security || []).flatMap((s) => Object.keys(s)),
+          securitySchemes: flatMap(o.security || [], (s) => Object.keys(s)),
           bodySchema:
             !!requestBody &&
             !!requestBody.content &&
