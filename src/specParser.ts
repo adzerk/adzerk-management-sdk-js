@@ -4,6 +4,8 @@ import merge from 'deepmerge';
 import { OpenAPIV3 } from 'openapi-types';
 import SwaggerParser from '@apidevtools/swagger-parser';
 
+flatMap.shim();
+
 type VerbRecord<K extends keyof any, T> = {
   [P in K]: T;
 };
@@ -69,10 +71,9 @@ export const parseSpecifications = async (
   specList: Array<string> = buildSpecificationList()
 ): Promise<[Contract, SecuritySchema]> => {
   let specs = await fetchSpecifications(specList);
-  let contract = flatMap(specs, (r: OpenAPIV3.Document) => r.tags || []).reduce(
-    (agg: Contract, v: OpenAPIV3.TagObject) => ((agg[camelcase(v.name)] = {}), agg),
-    {} as Contract
-  );
+  let contract = specs
+    .flatMap((r) => r.tags || [])
+    .reduce((agg, v) => ((agg[camelcase(v.name)] = {}), agg), {} as Contract);
 
   let paths = specs.reduce((agg, p) => merge(agg, p.paths), {} as OpenAPIV3.PathsObject);
   let components = specs.reduce(
@@ -103,7 +104,7 @@ export const parseSpecifications = async (
           pathParameters: [],
           queryParameters: [],
           headerParameters: [],
-          securitySchemes: flatMap(o.security || [], (s) => Object.keys(s)),
+          securitySchemes: (o.security || []).flatMap((s) => Object.keys(s)),
           bodySchema:
             !!requestBody &&
             !!requestBody.content &&
