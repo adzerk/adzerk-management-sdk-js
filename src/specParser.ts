@@ -46,7 +46,7 @@ export interface SecuritySchema {
   [key: string]: OpenAPIV3.ApiKeySecurityScheme;
 }
 
-export const buildSpecificationList = (
+export const buildFullSpecificationList = (
   version: string = 'master',
   basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
 ): Array<string> => {
@@ -55,7 +55,26 @@ export const buildSpecificationList = (
     `${basePath}/creative-template.yaml`,
     `${basePath}/creative.yaml`,
     `${basePath}/flight.yaml`,
+    `${basePath}/ad.yaml`,
+    `${basePath}/ad-type.yaml`,
+    `${basePath}/campaign.yaml`,
+    `${basePath}/channel.yaml`,
+    `${basePath}/channel-site-map.yaml`,
+    `${basePath}/flight-category.yaml`,
+    `${basePath}/geo-targeting.yaml`,
+    `${basePath}/priority.yaml`,
+    `${basePath}/site-zone-targeting.yaml`,
+    `${basePath}/sites.yaml`,
+    `${basePath}/zones.yaml`,
   ];
+};
+
+export const buildPartialSpecificationList = (
+  objects: Array<string>,
+  version: string = 'master',
+  basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
+): Array<string> => {
+  return objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
 const fetchSpecifications = async (
@@ -68,7 +87,7 @@ const fetchSpecifications = async (
 };
 
 export const parseSpecifications = async (
-  specList: Array<string> = buildSpecificationList()
+  specList: Array<string> = buildFullSpecificationList()
 ): Promise<[Contract, SecuritySchema]> => {
   let specs = await fetchSpecifications(specList);
   let contract = specs
