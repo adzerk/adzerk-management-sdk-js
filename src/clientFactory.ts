@@ -252,10 +252,10 @@ export const buildClient = async (
             (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
               ? 'full'
               : 'none',
-          retry: (err, attemptNumber) => (
-            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`),
-            err.code === 429
-          ),
+          retry: (err, attemptNumber) => {
+            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
+            return err.code === 429;
+          },
         }
       );
 
