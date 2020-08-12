@@ -97,6 +97,8 @@ const buildHeaders = (
   keys: any,
   existingHeaders: Headers = {}
 ) => {
+  existingHeaders['X-Adzerk-Sdk-Version'] =
+    'adzerk-management-sdk-js:{NPM_PACKAGE_VERSION}';
   return operation.securitySchemes.reduce((headers, ss) => {
     if (!securitySchemes[ss] || securitySchemes[ss].in !== 'header') {
       return headers;
