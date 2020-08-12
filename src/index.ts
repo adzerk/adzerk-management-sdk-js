@@ -2,6 +2,6 @@ export interface LoggerFunc {
   (lvl: string, msg: string, meta?: object): void;
 }
 
-export { buildSpecificationList } from "./specParser";
+export { buildFullSpecificationList, buildPartialSpecificationList } from './specParser';
 
-export { buildClient } from "./clientFactory";
+export { buildClient } from './clientFactory';
