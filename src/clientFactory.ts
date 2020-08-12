@@ -1,3 +1,4 @@
+import { backOff } from 'exponential-backoff';
 import camelcase from 'camelcase';
 import fetch, { RequestInit, HeadersInit } from 'node-fetch';
 import http, { request } from 'http';
@@ -36,6 +37,8 @@ export interface ClientFactoryOptions {
 export interface RunOptions<TCurrent, TAcc> {
   callback?: (accumlator: TAcc, current: TCurrent) => TAcc;
   initialValue?: TAcc;
+  retryStrategy?: 'disabled' | 'exponential' | 'exponential-jitter';
+  maxRetries?: number;
 }
 
 export interface Client {
@@ -233,7 +236,26 @@ export const buildClient = async (
         logger
       );
 
-      let r = await fetch(url, requestArgs);
+      let isRetryEnabled = (qOpts?.retryStrategy || 'exponential-jitter') === 'disabled';
+
+      let r = await backOff(
+        async () => {
+          let ir = await fetch(href, requestArgs);
+          if (ir.status == 429) {
+            throw { type: 'client', code: 429 };
+          }
+          return ir;
+        },
+        {
+          numOfAttempts: isRetryEnabled ? qOpts?.maxRetries || 5 : 1,
+          jitter:
+            (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
+              ? 'full'
+              : 'none',
+          retry: (err) => err.code === 429,
+        }
+      );
+
       if (!r.ok) {
         logger('error', 'API Request failed', r);
       }
