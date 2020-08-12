@@ -6,6 +6,27 @@ import {
   buildPartialSpecificationList,
 } from './specParser';
 
+test('buildFullSpecificationList returns a master github url if no options specified', () => {
+  let sl = buildFullSpecificationList();
+  expect(sl).toStrictEqual([
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/advertiser.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative-template.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/flight.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad-type.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/campaign.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/channel.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/channel-site-map.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/flight-category.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/geo-targeting.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/priority.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/site-zone-targeting.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/sites.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/zones.yaml`,
+  ]);
+});
+
 test('buildFullSpecificationList returns a github url if only version specified', () => {
   let sl = buildFullSpecificationList('v1.0.1');
   expect(sl).toStrictEqual([
@@ -45,6 +66,14 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
     '../test/fixtures/site-zone-targeting.yaml',
     '../test/fixtures/sites.yaml',
     '../test/fixtures/zones.yaml',
+  ]);
+});
+
+test('buildPartialSpecificationList returns a master github url if no options specified', () => {
+  let sl = buildPartialSpecificationList(['ad', 'creative-template']);
+  expect(sl).toStrictEqual([
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative-template.yaml`,
   ]);
 });
 
