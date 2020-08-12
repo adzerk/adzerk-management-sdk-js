@@ -22,8 +22,8 @@ test('buildFullSpecificationList returns a master github url if no options speci
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/geo-targeting.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/priority.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/site-zone-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/sites.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/zones.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/site.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/zone.yaml`,
   ]);
 });
 
@@ -43,8 +43,8 @@ test('buildFullSpecificationList returns a github url if only version specified'
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/geo-targeting.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/priority.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/site-zone-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/sites.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/zones.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/site.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/zone.yaml`,
   ]);
 });
 
@@ -64,8 +64,8 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
     '../test/fixtures/geo-targeting.yaml',
     '../test/fixtures/priority.yaml',
     '../test/fixtures/site-zone-targeting.yaml',
-    '../test/fixtures/sites.yaml',
-    '../test/fixtures/zones.yaml',
+    '../test/fixtures/site.yaml',
+    '../test/fixtures/zone.yaml',
   ]);
 });
 

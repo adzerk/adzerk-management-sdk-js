@@ -64,8 +64,8 @@ export const buildFullSpecificationList = (
     `${basePath}/geo-targeting.yaml`,
     `${basePath}/priority.yaml`,
     `${basePath}/site-zone-targeting.yaml`,
-    `${basePath}/sites.yaml`,
-    `${basePath}/zones.yaml`,
+    `${basePath}/site.yaml`,
+    `${basePath}/zone.yaml`,
   ];
 };
 
