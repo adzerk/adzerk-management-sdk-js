@@ -24,6 +24,14 @@ import { convertKeysToCamelcase } from './utils';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
+  campaign: ['update'],
+  ad: ['update'],
+  channel: ['update'],
+  creative: ['update'],
+  flight: ['update'],
+  priority: ['update'],
+  site: ['update'],
+  zone: ['update'],
 };
 
 export interface ClientFactoryOptions {
