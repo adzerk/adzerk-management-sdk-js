@@ -32,6 +32,12 @@ const factory: ValidatorFactory = (schema, propertyName) => {
   );
 
   validators.push((v: Array<any>) => {
+    if (v == undefined) {
+      return schema.nullable
+        ? true
+        : { isValid: false, message: `${propertyName} is not nullable` };
+    }
+
     let [isValid, validationResults]: [boolean, Array<ValidationResult>] = v.reduce(
       ([iv, rs]: [boolean, Array<ValidationResult>], i) => {
         let vr: ValidationResult = validate(itemValidator, i);
