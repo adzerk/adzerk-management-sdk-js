@@ -73,7 +73,7 @@ let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {
   );
   unmappedKeys.forEach((k) => {
     logger(
-      'warning',
+      'warn',
       `Property ${k} is not supported by this operation, it will be ignored`,
       { ...meta, file: 'properMapper.js', line: 15 }
     );
@@ -99,7 +99,7 @@ let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {
 
     if (ls.deprecated) {
       logger(
-        'warning',
+        'warn',
         `Property ${k} is deprecated and may be removed completely in the future`,
         {
           file: 'propertyMapper.js',
