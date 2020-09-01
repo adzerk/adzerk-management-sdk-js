@@ -8,7 +8,6 @@
     "removeComments": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "types": ["node"],
     "esModuleInterop": true
   },
   "exclude": ["*.test.ts"]
