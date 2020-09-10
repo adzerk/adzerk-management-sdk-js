@@ -146,7 +146,7 @@ const buildRequestArgs = async (
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     let getBody = { id: body.id };
-    let response = c.run(obj, 'get', getBody);
+    let response = await c.run(obj, 'get', getBody);
 
     body = { ...response, ...body };
   }
