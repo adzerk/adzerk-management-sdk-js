@@ -153,8 +153,8 @@ const buildRequestArgs = async (
 
   let idOnlySchema: OpenAPIV3.NonArraySchemaObject = {
     type: 'object',
-    required: ['id'],
-    properties: { id: { type: 'integer', format: 'int32' } },
+    required: ['Id'],
+    properties: { Id: { type: 'integer', format: 'int32' } },
   };
 
   let contentType = Object.keys(schema)[0];
