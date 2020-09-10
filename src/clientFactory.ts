@@ -96,7 +96,9 @@ const addQueryParameters = (
 
     let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
     url.searchParams.append(p.name, mapper(body[cn]).toString());
-    delete body[cn];
+    if (cn !== 'id') {
+      delete body[cn];
+    }
   }
 
   return url.href;
@@ -143,10 +145,8 @@ const buildRequestArgs = async (
 
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
-    let key = `${obj}Id`;
-    let getBody = { [key]: body[key] };
+    let getBody = { id: body.id };
     let response = c.run(obj, 'get', getBody);
-    delete body[key];
 
     body = { ...response, ...body };
   }
