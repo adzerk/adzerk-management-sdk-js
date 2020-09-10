@@ -151,13 +151,23 @@ const buildRequestArgs = async (
     body = { ...response, ...body };
   }
 
+  let idOnlySchema: OpenAPIV3.NonArraySchemaObject = {
+    type: 'object',
+    required: ['id'],
+    properties: { id: { type: 'integer', format: 'int32' } },
+  };
+
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
   let validator = validatorFactory(schema[contentType], '');
-  let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
-    schema: obj,
-    operation: op,
-  });
+  let propertyMapper = propertyMapperFactory(
+    fetchBeforeSendOperations[obj]?.includes(op) ? idOnlySchema : schema[contentType],
+    logger,
+    {
+      schema: obj,
+      operation: op,
+    }
+  );
   let mapped = propertyMapper(body);
 
   let validationResult = validate(validator, mapped);
