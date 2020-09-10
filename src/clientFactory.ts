@@ -159,15 +159,14 @@ const buildRequestArgs = async (
 
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
-  let validator = validatorFactory(schema[contentType], '');
-  let propertyMapper = propertyMapperFactory(
+  let validator = validatorFactory(
     fetchBeforeSendOperations[obj]?.includes(op) ? idOnlySchema : schema[contentType],
-    logger,
-    {
-      schema: obj,
-      operation: op,
-    }
+    ''
   );
+  let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
+    schema: obj,
+    operation: op,
+  });
   let mapped = propertyMapper(body);
 
   let validationResult = validate(validator, mapped);
