@@ -43,7 +43,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
       ([iv, rs]: [boolean, Array<ValidationResult>], i) => {
         let vr: ValidationResult = validate(itemValidator, i);
         rs.push(vr);
-        return [iv && (isValidationResult(vr) ? vr.isValid : vr)];
+        return [iv && (isValidationResult(vr) ? vr.isValid : vr), rs];
       },
       [true, []] as [boolean, Array<ValidationResult>]
     );
