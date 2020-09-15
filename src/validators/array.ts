@@ -1,6 +1,7 @@
 import camelcase from 'camelcase';
 import { OpenAPIV3 } from 'openapi-types';
 import { ValidatorFactory, wrapNullable } from './';
+import validatorFactory from '../validatorFactory';
 import validate, {
   ValidationResult,
   ComplexValidationResult,
@@ -26,7 +27,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     return validators;
   }
 
-  let itemValidator = factory(
+  let itemValidator = validatorFactory(
     (schema as OpenAPIV3.ArraySchemaObject).items as OpenAPIV3.SchemaObject,
     'item'
   );
