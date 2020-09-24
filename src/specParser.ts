@@ -66,6 +66,9 @@ export const buildFullSpecificationList = (
     `${basePath}/site-zone-targeting.yaml`,
     `${basePath}/site.yaml`,
     `${basePath}/zone.yaml`,
+    `${basePath}/queued-report.yaml`,
+    `${basePath}/scheduled-report.yaml`,
+    `${basePath}/real-time-report.yaml`,
   ];
 };
 
