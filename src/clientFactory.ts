@@ -62,7 +62,8 @@ interface Headers {
   [key: string]: string;
 }
 
-const noop = () => {};
+const defaultLogger: LoggerFunc = (lvl, msg, meta) =>
+  process.stdout.write(`[${lvl}] ${msg} [${JSON.stringify(meta)}]\n`);
 
 const addQueryParameters = (
   url: URL,
@@ -207,7 +208,7 @@ export const buildClient = async (
   opts: ClientFactoryOptions
 ): Promise<Client> => {
   let [spec, securitySchemas] = await parseSpecifications(opts.specifications);
-  let logger = opts.logger || noop;
+  let logger = opts.logger || defaultLogger;
   let protocol = opts.protocol || 'https';
   let host = opts.host || 'api.adzerk.net';
   let port = opts.port || 443;
@@ -287,9 +288,13 @@ export const buildClient = async (
       let callback =
         (qOpts && qOpts.callback) || ((acc: Array<any>, o: any) => (acc.push(o), acc));
 
-      return convertKeysToCamelcase(
-        await handleResponseStream(r.body, callback, (qOpts && qOpts.initialValue) || [])
+      let result = await handleResponseStream(
+        r.body,
+        callback,
+        (qOpts && qOpts.initialValue) || []
       );
+
+      return convertKeysToCamelcase(result);
     },
   };
 };
@@ -320,8 +325,12 @@ let handleResponseStream = async <TCurr, TAcc>(
               return;
             }
           });
-      } catch {}
+      } catch (e) {
+        reject(e);
+      }
     });
+
+    body.on('end', () => resolve(accumulator));
 
     body.on('close', () => resolve(accumulator));
 
