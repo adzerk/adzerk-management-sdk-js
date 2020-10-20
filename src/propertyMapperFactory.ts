@@ -3,12 +3,16 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import formatRFC3339 from 'date-fns/formatRFC3339';
 import { OpenAPIV3 } from 'openapi-types';
-import fs from 'fs';
+import fsl from 'fs';
 import { LoggerFunc } from '.';
 
-let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {}) => (
-  obj: any
-) => {
+let fs = fsl.promises;
+
+let factory = (
+  schema: OpenAPIV3.SchemaObject,
+  logger: LoggerFunc,
+  meta: any = {}
+) => async (obj: any) => {
   logger('debug', 'Building mapper', {
     type: schema.type,
     format: schema.format,
@@ -30,15 +34,18 @@ let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {
       return obj;
     }
     let f = factory(schema.items as OpenAPIV3.SchemaObject, logger);
-    return obj.map((o: any) => f(o));
+    let promises = obj.map(async (o: any) => await f(o));
+    let results = await Promise.all(promises);
+    return results;
   }
 
   if (schema.type === 'string' && schema.format === 'binary') {
     try {
-      let stat = fs.lstatSync(obj);
+      let stat = await fs.lstat(obj);
 
       if (stat.isFile()) {
-        return fs.createReadStream(obj);
+        let file = await fs.readFile(obj);
+        return file;
       }
     } catch {}
 
@@ -79,7 +86,7 @@ let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {
     );
   });
 
-  return schemaPropertiesKeys.reduce((agg, k) => {
+  return schemaPropertiesKeys.reduce(async (agg, k) => {
     let c = camelcase(k);
 
     if (schema.properties == undefined) {
@@ -109,7 +116,7 @@ let factory = (schema: OpenAPIV3.SchemaObject, logger: LoggerFunc, meta: any = {
     }
 
     let f = factory(ls, logger, meta);
-    agg[k] = f(obj[c]);
+    agg[k] = await f(obj[c]);
     return agg;
   }, {} as any);
 };

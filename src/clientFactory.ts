@@ -65,12 +65,12 @@ interface Headers {
 const defaultLogger: LoggerFunc = (lvl, msg, meta) =>
   process.stdout.write(`[${lvl}] ${msg} [${JSON.stringify(meta)}]\n`);
 
-const addQueryParameters = (
+const addQueryParameters = async (
   url: URL,
   parameters: Array<OpenAPIV3.ParameterObject>,
   body: any,
   logger: LoggerFunc
-): string => {
+): Promise<string> => {
   for (let p of parameters) {
     if (p.schema == undefined) {
       continue;
@@ -96,7 +96,8 @@ const addQueryParameters = (
     }
 
     let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
-    url.searchParams.append(p.name, mapper(body[cn]).toString());
+    let value = await mapper(body[cn]);
+    url.searchParams.append(p.name, value.toString());
     if (cn !== 'id') {
       delete body[cn];
     }
@@ -168,7 +169,7 @@ const buildRequestArgs = async (
     schema: obj,
     operation: op,
   });
-  let mapped = propertyMapper(body);
+  let mapped = await propertyMapper(body);
 
   let validationResult = validate(validator, mapped);
 
@@ -238,7 +239,7 @@ export const buildClient = async (
         return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
       }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
-      let href = addQueryParameters(url, operation.queryParameters, body, logger);
+      let href = await addQueryParameters(url, operation.queryParameters, body, logger);
       let headers = buildHeaders(securitySchemas, operation, {
         ApiKeyAuth: adzerkApiKey,
       });
@@ -258,6 +259,7 @@ export const buildClient = async (
 
       let r = await backOff(
         async () => {
+          logger('info', 'Making request to Adzerk API', { href, requestArgs });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
             throw { type: 'client', code: 429 };
