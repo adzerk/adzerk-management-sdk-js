@@ -46,10 +46,25 @@ export interface SecuritySchema {
   [key: string]: OpenAPIV3.ApiKeySecurityScheme;
 }
 
+export interface FullSpecificationListOptions {
+  version?: string;
+  basePath?: string;
+}
+
+export interface PartialSpecificationListOptions {
+  objects: Array<string>;
+  version?: string;
+  basePath?: string;
+}
+
 export const buildFullSpecificationList = (
-  version: string = 'master',
-  basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
+  opts: FullSpecificationListOptions = {}
 ): Array<string> => {
+  let version = opts.version ?? 'master';
+  let basePath =
+    opts.basePath ??
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`;
+
   return [
     `${basePath}/advertiser.yaml`,
     `${basePath}/creative-template.yaml`,
@@ -73,11 +88,13 @@ export const buildFullSpecificationList = (
 };
 
 export const buildPartialSpecificationList = (
-  objects: Array<string>,
-  version: string = 'master',
-  basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
+  opts: PartialSpecificationListOptions
 ): Array<string> => {
-  return objects.map((o) => `${basePath}/${o}.yaml`);
+  let version = opts.version ?? 'master';
+  let basePath =
+    opts.basePath ??
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`;
+  return opts.objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
 export const fetchSpecifications = async (
