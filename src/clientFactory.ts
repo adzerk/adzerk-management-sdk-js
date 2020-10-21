@@ -35,11 +35,11 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
 };
 
 export interface ClientFactoryOptions {
+  specifications: Array<OpenAPIV3.Document>;
   protocol?: 'http' | 'https';
   host?: string;
   port?: number;
   logger?: LoggerFunc;
-  specifications?: Array<string>;
 }
 
 export interface RunOptions<TCurrent, TAcc> {

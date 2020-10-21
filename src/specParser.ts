@@ -80,8 +80,8 @@ export const buildPartialSpecificationList = (
   return objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
-const fetchSpecifications = async (
-  specList: Array<string>
+export const fetchSpecifications = async (
+  specList: Array<string> = buildFullSpecificationList()
 ): Promise<Array<OpenAPIV3.Document>> => {
   let promises = specList.map((s) => SwaggerParser.dereference(s));
   let results = await Promise.all(promises);
@@ -90,9 +90,9 @@ const fetchSpecifications = async (
 };
 
 export const parseSpecifications = async (
-  specList: Array<string> = buildFullSpecificationList()
+  specs: Array<OpenAPIV3.Document>
 ): Promise<[Contract, SecuritySchema]> => {
-  let specs = await fetchSpecifications(specList);
+  specs = specs ?? (await fetchSpecifications());
   let contract = specs
     .flatMap((r) => r.tags || [])
     .reduce((agg, v) => ((agg[camelcase(v.name)] = {}), agg), {} as Contract);

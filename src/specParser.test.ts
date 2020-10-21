@@ -4,6 +4,7 @@ import {
   buildFullSpecificationList,
   parseSpecifications,
   buildPartialSpecificationList,
+  fetchSpecifications,
 } from './specParser';
 
 test('buildFullSpecificationList returns a master github url if no options specified', () => {
@@ -107,9 +108,9 @@ test('buildPartialSpecificationList returns the base path and ignores version if
 });
 
 test('parseSpecifications properly parses and transforms an OpenAPI v3 spec', async () => {
-  let [contract, securitySchemes] = await parseSpecifications([
-    './test/fixtures/petstore.json',
-  ]);
+  let specifications = await fetchSpecifications(['./test/fixtures/petstore.json']);
+
+  let [contract, securitySchemes] = await parseSpecifications(specifications);
 
   expect(securitySchemes).toStrictEqual({
     ApiKeyAuth: {
