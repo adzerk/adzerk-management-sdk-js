@@ -8,4 +8,4 @@ export {
   fetchSpecifications,
 } from './specParser';
 
-export { buildClient } from './clientFactory';
+export { ClientFactory } from './clientFactory';
