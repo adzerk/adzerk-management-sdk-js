@@ -39,7 +39,6 @@ const bodySerializerFactory = (contentType: string) => {
             });
           } else if (isStream(body[k])) {
             let b = await readStream(body[k]);
-            console.log('WHAT IS B???', b);
             let ft = await fileType.fromBuffer(b);
             if (ft == undefined) {
               return;
