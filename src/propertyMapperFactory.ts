@@ -86,22 +86,21 @@ let factory = (
     );
   });
 
-  return schemaPropertiesKeys.reduce(async (agg, k) => {
+  let promises = schemaPropertiesKeys.map(async (k) => {
     let c = camelcase(k);
 
     if (schema.properties == undefined) {
-      return agg;
+      return;
     }
 
     let ls: OpenAPIV3.SchemaObject = schema.properties[k] as OpenAPIV3.SchemaObject;
 
     if (obj[c] == undefined && ls.default != undefined) {
-      agg[k] = ls.default;
-      return agg;
+      return [k, ls.default];
     }
 
     if (obj[c] == undefined) {
-      return agg;
+      return;
     }
 
     if (ls.deprecated) {
@@ -116,7 +115,17 @@ let factory = (
     }
 
     let f = factory(ls, logger, meta);
-    agg[k] = await f(obj[c]);
+    let v: any = await f(obj[c]);
+    return [k, v];
+  });
+
+  let values = await Promise.all(promises);
+
+  return values.reduce((agg, pair) => {
+    if (pair == undefined) {
+      return agg;
+    }
+    agg[pair[0]] = pair[1];
     return agg;
   }, {} as any);
 };
