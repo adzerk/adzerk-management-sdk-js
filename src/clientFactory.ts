@@ -205,105 +205,98 @@ const buildRequestArgs = async (
   return requestArgs;
 };
 
-export class ClientFactory {
-  static async build(opts: ClientFactoryOptions): Promise<Client> {
-    let [spec, securitySchemas] = await parseSpecifications(opts.specifications);
-    let logger = opts.logger || defaultLogger;
-    let protocol = opts.protocol || 'https';
-    let host = opts.host || 'api.adzerk.net';
-    let port = opts.port || 443;
+export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
+  let [spec, securitySchemas] = await parseSpecifications(opts.specifications);
+  let logger = opts.logger || defaultLogger;
+  let protocol = opts.protocol || 'https';
+  let host = opts.host || 'api.adzerk.net';
+  let port = opts.port || 443;
 
-    let agent = new (protocol === 'https' ? https : http).Agent({
-      keepAlive: true,
-    });
+  let agent = new (protocol === 'https' ? https : http).Agent({
+    keepAlive: true,
+  });
 
-    return {
-      async run(obj, op, body, qOpts) {
-        let operation = spec[obj][op];
-        let rawBaseUrl = operation.url;
-        let baseUrl = operation.pathParameters.reduce((url, parameter) => {
-          if (parameter.schema != undefined) {
-            let validator = validatorFactory(
-              parameter.schema as OpenAPIV3.SchemaObject,
-              parameter.name
-            );
-            let validationResult = validate(validator, body[camelcase(parameter.name)]);
-            if (
-              (isComplexValidationResult(validationResult) &&
-                !validationResult.isValid) ||
-              (isBooleanValidationResult(validationResult) && !validationResult)
-            ) {
-              throw `Value for ${parameter.name} is invalid`;
-            }
+  return {
+    async run(obj, op, body, qOpts) {
+      let operation = spec[obj][op];
+      let rawBaseUrl = operation.url;
+      let baseUrl = operation.pathParameters.reduce((url, parameter) => {
+        if (parameter.schema != undefined) {
+          let validator = validatorFactory(
+            parameter.schema as OpenAPIV3.SchemaObject,
+            parameter.name
+          );
+          let validationResult = validate(validator, body[camelcase(parameter.name)]);
+          if (
+            (isComplexValidationResult(validationResult) && !validationResult.isValid) ||
+            (isBooleanValidationResult(validationResult) && !validationResult)
+          ) {
+            throw `Value for ${parameter.name} is invalid`;
           }
-          return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
-        }, rawBaseUrl);
-        let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
-        let href = await addQueryParameters(url, operation.queryParameters, body, logger);
-        let headers = buildHeaders(securitySchemas, operation, {
-          ApiKeyAuth: opts.apiKey,
-        });
-        let requestArgs = await buildRequestArgs(
-          this,
-          headers,
-          operation.method,
-          agent,
-          obj,
-          op,
-          body,
-          operation,
-          logger
-        );
+        }
+        return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
+      }, rawBaseUrl);
+      let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
+      let href = await addQueryParameters(url, operation.queryParameters, body, logger);
+      let headers = buildHeaders(securitySchemas, operation, {
+        ApiKeyAuth: opts.apiKey,
+      });
+      let requestArgs = await buildRequestArgs(
+        this,
+        headers,
+        operation.method,
+        agent,
+        obj,
+        op,
+        body,
+        operation,
+        logger
+      );
 
-        let isRetryEnabled =
-          (qOpts?.retryStrategy || 'exponential-jitter') === 'disabled';
+      let isRetryEnabled = (qOpts?.retryStrategy || 'exponential-jitter') === 'disabled';
 
-        let r = await backOff(
-          async () => {
-            logger('info', 'Making request to Adzerk API', { href, requestArgs });
-            let ir = await fetch(href, requestArgs);
-            if (ir.status == 429) {
-              throw { type: 'client', code: 429 };
-            }
-            return ir;
+      let r = await backOff(
+        async () => {
+          logger('info', 'Making request to Adzerk API', { href, requestArgs });
+          let ir = await fetch(href, requestArgs);
+          if (ir.status == 429) {
+            throw { type: 'client', code: 429 };
+          }
+          return ir;
+        },
+        {
+          numOfAttempts: isRetryEnabled ? qOpts?.maxRetries || 5 : 1,
+          jitter:
+            (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
+              ? 'full'
+              : 'none',
+          retry: (err, attemptNumber) => {
+            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
+            return err.code === 429;
           },
-          {
-            numOfAttempts: isRetryEnabled ? qOpts?.maxRetries || 5 : 1,
-            jitter:
-              (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
-                ? 'full'
-                : 'none',
-            retry: (err, attemptNumber) => {
-              logger(
-                'info',
-                `Request was rate limited. This was attempt ${attemptNumber}`
-              );
-              return err.code === 429;
-            },
-          }
-        );
-
-        if (!r.ok) {
-          logger('error', 'API Request failed', r);
         }
+      );
 
-        if (op !== 'filter') {
-          return convertKeysToCamelcase(await r.json());
-        }
+      if (!r.ok) {
+        logger('error', 'API Request failed', r);
+      }
 
-        let callback =
-          (qOpts && qOpts.callback) || ((acc: Array<any>, o: any) => (acc.push(o), acc));
+      if (op !== 'filter') {
+        return convertKeysToCamelcase(await r.json());
+      }
 
-        let result = await handleResponseStream(
-          r.body,
-          callback,
-          (qOpts && qOpts.initialValue) || []
-        );
+      let callback =
+        (qOpts && qOpts.callback) || ((acc: Array<any>, o: any) => (acc.push(o), acc));
 
-        return convertKeysToCamelcase(result);
-      },
-    };
-  }
+      let result = await handleResponseStream(
+        r.body,
+        callback,
+        (qOpts && qOpts.initialValue) || []
+      );
+
+      return convertKeysToCamelcase(result);
+    },
+  };
 }
 
 let handleResponseStream = async <TCurr, TAcc>(

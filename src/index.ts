@@ -2,10 +2,17 @@ export interface LoggerFunc {
   (lvl: 'debug' | 'info' | 'warn' | 'error', msg: string, meta?: object): void;
 }
 
-export {
+import {
   buildFullSpecificationList,
   buildPartialSpecificationList,
   fetchSpecifications,
 } from './specParser';
 
-export { ClientFactory } from './clientFactory';
+import { buildClient } from './clientFactory';
+
+export default {
+  buildClient,
+  buildFullSpecificationList,
+  buildPartialSpecificationList,
+  fetchSpecifications,
+};
