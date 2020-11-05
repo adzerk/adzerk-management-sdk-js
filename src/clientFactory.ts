@@ -176,16 +176,20 @@ const buildRequestArgs = async (
 
   if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
     if (validationResult.form == undefined) {
-      logger('error', 'Request body is invalid');
+      await logger('error', 'Request body is invalid');
     } else {
-      logger('error', 'Request body is invalid', validationResult.form.validationErrors);
+      await logger(
+        'error',
+        'Request body is invalid',
+        validationResult.form.validationErrors
+      );
     }
 
     throw 'Request body is invalid';
   }
 
   if (isBooleanValidationResult(validationResult) && !validationResult) {
-    logger('error', 'Request body is invalid');
+    await logger('error', 'Request body is invalid');
   }
 
   requestArgs.body = await serializer(mapped);
@@ -257,7 +261,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
 
       let r = await backOff(
         async () => {
-          logger('info', 'Making request to Adzerk API', { href, requestArgs });
+          await logger('info', 'Making request to Adzerk API', { href, requestArgs });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
             throw { type: 'client', code: 429 };
@@ -270,15 +274,18 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
             (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
               ? 'full'
               : 'none',
-          retry: (err, attemptNumber) => {
-            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
+          retry: async (err, attemptNumber) => {
+            await logger(
+              'info',
+              `Request was rate limited. This was attempt ${attemptNumber}`
+            );
             return err.code === 429;
           },
         }
       );
 
       if (!r.ok) {
-        logger('error', 'API Request failed', r);
+        await logger('error', 'API Request failed', r);
       }
 
       if (op !== 'filter') {

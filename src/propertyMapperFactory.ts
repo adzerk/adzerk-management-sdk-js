@@ -13,7 +13,7 @@ let factory = (
   logger: LoggerFunc,
   meta: any = {}
 ) => async (obj: any) => {
-  logger('debug', 'Building mapper', {
+  await logger('debug', 'Building mapper', {
     type: schema.type,
     format: schema.format,
   });
@@ -52,13 +52,13 @@ let factory = (
     return obj;
   }
 
-  logger('debug', 'Parsing property', {
+  await logger('debug', 'Parsing property', {
     type: schema.type,
     format: schema.format,
   });
 
   if (schema.type === 'string' && schema.format === 'date') {
-    logger('debug', 'Parsing date when mapping');
+    await logger('debug', 'Parsing date when mapping');
     let d = typeof obj === 'string' ? parseISO(obj) : obj;
     return format(d, 'yyyy-MM-dd');
   }
@@ -78,13 +78,14 @@ let factory = (
   let unmappedKeys = Object.keys(obj).filter(
     (k) => !camelCasedSchemaPropertiesKeys.includes(k)
   );
-  unmappedKeys.forEach((k) => {
-    logger(
+
+  for (k of unmappedKeys) {
+    await logger(
       'warn',
       `Property ${k} is not supported by this operation, it will be ignored`,
       { ...meta, file: 'properMapper.js', line: 15 }
     );
-  });
+  }
 
   let promises = schemaPropertiesKeys.map(async (k) => {
     let c = camelcase(k);
@@ -104,7 +105,7 @@ let factory = (
     }
 
     if (ls.deprecated) {
-      logger(
+      await logger(
         'warn',
         `Property ${k} is deprecated and may be removed completely in the future`,
         {
