@@ -79,7 +79,7 @@ let factory = (
     (k) => !camelCasedSchemaPropertiesKeys.includes(k)
   );
 
-  for (k of unmappedKeys) {
+  for (let k of unmappedKeys) {
     await logger(
       'warn',
       `Property ${k} is not supported by this operation, it will be ignored`,
