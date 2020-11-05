@@ -284,10 +284,6 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         }
       );
 
-      if (!r.ok) {
-        await logger('error', 'API Request failed', r);
-      }
-
       if (op !== 'filter') {
         return convertKeysToCamelcase(await r.json());
       }
@@ -301,7 +297,13 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         (qOpts && qOpts.initialValue) || []
       );
 
-      return convertKeysToCamelcase(result);
+      let converted = convertKeysToCamelcase(result);
+
+      if (!r.ok) {
+        await logger('error', 'API Request failed', { response: r, body: converted });
+      }
+
+      return converted;
     },
   };
 }
