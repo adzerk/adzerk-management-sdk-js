@@ -155,7 +155,7 @@ const buildRequestArgs = async (
     body = { ...response, ...body };
   }
 
-  let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject => {
+  let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
           type: 'object',
@@ -167,7 +167,6 @@ const buildRequestArgs = async (
           required: ['id'],
           properties: { id: { type: 'integer', format: 'int32' } },
         };
-  };
 
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
