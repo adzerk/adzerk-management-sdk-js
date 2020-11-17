@@ -32,6 +32,7 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   priority: ['update'],
   site: ['update'],
   zone: ['update'],
+  user: ['update'],
 };
 
 export interface ClientFactoryOptions {
