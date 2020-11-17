@@ -3,7 +3,7 @@ import camelcase from 'camelcase';
 import fetch, { RequestInit, HeadersInit } from 'node-fetch';
 import http, { request } from 'http';
 import https from 'https';
-import { OpenAPIV3 } from 'openapi-types';
+import { OpenAPI, OpenAPIV3 } from 'openapi-types';
 import validate from 'strickland';
 import { URL } from 'url';
 
@@ -155,16 +155,28 @@ const buildRequestArgs = async (
     body = { ...response, ...body };
   }
 
-  let idOnlySchema: OpenAPIV3.NonArraySchemaObject = {
-    type: 'object',
-    required: ['Id'],
-    properties: { Id: { type: 'integer', format: 'int32' } },
+  let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject => {
+    isCapitalized
+      ? {
+          type: 'object',
+          required: ['Id'],
+          properties: { Id: { type: 'integer', format: 'int32' } },
+        }
+      : {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'integer', format: 'int32' } },
+        };
   };
 
   let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
+  let propertyNames = Object.keys(schema[contentType].properties || {});
+
   let validator = validatorFactory(
-    fetchBeforeSendOperations[obj]?.includes(op) ? idOnlySchema : schema[contentType],
+    fetchBeforeSendOperations[obj]?.includes(op)
+      ? buildIdOnlySchema(propertyNames.includes('Id'))
+      : schema[contentType],
     ''
   );
   let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
