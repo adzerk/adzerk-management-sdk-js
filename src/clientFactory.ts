@@ -147,6 +147,27 @@ const buildRequestArgs = async (
     throw 'Request requires a request body to be specified';
   }
 
+  let contentType = Object.keys(schema)[0];
+  let schemaPropertiesKeys = Object.keys(schema[contentType].properties || {});
+  let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) => camelcase(k));
+
+  let unmappedKeys = Object.keys(obj).filter(
+    (k) => !camelCasedSchemaPropertiesKeys.includes(k)
+  );
+
+  for (let k of unmappedKeys) {
+    await logger(
+      'warn',
+      `Property ${k} is not supported by this operation, it will be ignored`,
+      {
+        schema: obj,
+        operation: op,
+        file: 'propertyMapperFactory.js',
+        line: 86,
+      }
+    );
+  }
+
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     let getBody = { id: body.id };
@@ -168,7 +189,6 @@ const buildRequestArgs = async (
           properties: { id: { type: 'integer', format: 'int32' } },
         };
 
-  let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
 
@@ -178,6 +198,7 @@ const buildRequestArgs = async (
       : schema[contentType],
     ''
   );
+
   let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
     schema: obj,
     operation: op,

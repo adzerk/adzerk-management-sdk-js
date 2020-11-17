@@ -73,19 +73,6 @@ let factory = (
   }
 
   let schemaPropertiesKeys = Object.keys(schema.properties);
-  let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) => camelcase(k));
-
-  let unmappedKeys = Object.keys(obj).filter(
-    (k) => !camelCasedSchemaPropertiesKeys.includes(k)
-  );
-
-  for (let k of unmappedKeys) {
-    await logger(
-      'warn',
-      `Property ${k} is not supported by this operation, it will be ignored`,
-      { ...meta, file: 'propertyMapperFactory.js', line: 86 }
-    );
-  }
 
   let promises = schemaPropertiesKeys.map(async (k) => {
     let c = camelcase(k);
