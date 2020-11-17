@@ -162,8 +162,6 @@ const buildRequestArgs = async (
       {
         schema: obj,
         operation: op,
-        file: 'propertyMapperFactory.js',
-        line: 86,
       }
     );
   }
