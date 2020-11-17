@@ -83,7 +83,7 @@ let factory = (
     await logger(
       'warn',
       `Property ${k} is not supported by this operation, it will be ignored`,
-      { ...meta, file: 'properMapper.js', line: 15 }
+      { ...meta, file: 'propertyMapperFactory.js', line: 86 }
     );
   }
 
