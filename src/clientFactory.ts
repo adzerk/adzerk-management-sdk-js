@@ -235,6 +235,9 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   return {
     async run(obj, op, body, qOpts) {
       let operation = spec[obj][op];
+      let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) =>
+        Object.keys((operation.bodySchema || {})[ct]).map((k) => k.toLowerCase())
+      );
       let rawBaseUrl = operation.url;
       let baseUrl = operation.pathParameters.reduce((url, parameter) => {
         if (parameter.schema != undefined) {
@@ -250,10 +253,19 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
             throw `Value for ${parameter.name} is invalid`;
           }
         }
-        return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
+
+        let newUrl = url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
+        if (!bodySchemaKeys.includes(parameter.name.toLowerCase())) {
+          delete body[parameter.name];
+        }
+        return newUrl;
       }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
       let href = await addQueryParameters(url, operation.queryParameters, body, logger);
+      operation.queryParameters
+        .filter((qp) => bodySchemaKeys.includes(qp.name.toLowerCase()))
+        .forEach((qp) => delete body[qp.name]);
+
       let headers = buildHeaders(securitySchemas, operation, {
         ApiKeyAuth: opts.apiKey,
       });
