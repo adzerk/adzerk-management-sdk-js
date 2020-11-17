@@ -46,10 +46,25 @@ export interface SecuritySchema {
   [key: string]: OpenAPIV3.ApiKeySecurityScheme;
 }
 
+export interface FullSpecificationListOptions {
+  version?: string;
+  basePath?: string;
+}
+
+export interface PartialSpecificationListOptions {
+  objects: Array<string>;
+  version?: string;
+  basePath?: string;
+}
+
 export const buildFullSpecificationList = (
-  version: string = 'master',
-  basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
+  opts: FullSpecificationListOptions = {}
 ): Array<string> => {
+  let version = opts.version ?? 'master';
+  let basePath =
+    opts.basePath ??
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`;
+
   return [
     `${basePath}/advertiser.yaml`,
     `${basePath}/creative-template.yaml`,
@@ -74,15 +89,17 @@ export const buildFullSpecificationList = (
 };
 
 export const buildPartialSpecificationList = (
-  objects: Array<string>,
-  version: string = 'master',
-  basePath: string = `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`
+  opts: PartialSpecificationListOptions
 ): Array<string> => {
-  return objects.map((o) => `${basePath}/${o}.yaml`);
+  let version = opts.version ?? 'master';
+  let basePath =
+    opts.basePath ??
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/${version}/management`;
+  return opts.objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
-const fetchSpecifications = async (
-  specList: Array<string>
+export const fetchSpecifications = async (
+  specList: Array<string> = buildFullSpecificationList()
 ): Promise<Array<OpenAPIV3.Document>> => {
   let promises = specList.map((s) => SwaggerParser.dereference(s));
   let results = await Promise.all(promises);
@@ -91,9 +108,9 @@ const fetchSpecifications = async (
 };
 
 export const parseSpecifications = async (
-  specList: Array<string> = buildFullSpecificationList()
+  specs: Array<OpenAPIV3.Document>
 ): Promise<[Contract, SecuritySchema]> => {
-  let specs = await fetchSpecifications(specList);
+  specs = specs ?? (await fetchSpecifications());
   let contract = specs
     .flatMap((r) => r.tags || [])
     .reduce((agg, v) => ((agg[camelcase(v.name)] = {}), agg), {} as Contract);

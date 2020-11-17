@@ -4,6 +4,7 @@ import {
   buildFullSpecificationList,
   parseSpecifications,
   buildPartialSpecificationList,
+  fetchSpecifications,
 } from './specParser';
 
 test('buildFullSpecificationList returns a master github url if no options specified', () => {
@@ -32,7 +33,7 @@ test('buildFullSpecificationList returns a master github url if no options speci
 });
 
 test('buildFullSpecificationList returns a github url if only version specified', () => {
-  let sl = buildFullSpecificationList('v1.0.1');
+  let sl = buildFullSpecificationList({ version: 'v1.0.1' });
   expect(sl).toStrictEqual([
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/advertiser.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/creative-template.yaml`,
@@ -57,7 +58,7 @@ test('buildFullSpecificationList returns a github url if only version specified'
 });
 
 test('buildFullSpecificationList returns the base path and ignores version if base path specified', () => {
-  let sl = buildFullSpecificationList(undefined, '../test/fixtures');
+  let sl = buildFullSpecificationList({ basePath: '../test/fixtures' });
   expect(sl).toStrictEqual([
     '../test/fixtures/advertiser.yaml',
     '../test/fixtures/creative-template.yaml',
@@ -82,7 +83,7 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
 });
 
 test('buildPartialSpecificationList returns a master github url if no options specified', () => {
-  let sl = buildPartialSpecificationList(['ad', 'creative-template']);
+  let sl = buildPartialSpecificationList({ objects: ['ad', 'creative-template'] });
   expect(sl).toStrictEqual([
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative-template.yaml`,
@@ -90,7 +91,10 @@ test('buildPartialSpecificationList returns a master github url if no options sp
 });
 
 test('buildPartialSpecificationList returns a github url if only version specified', () => {
-  let sl = buildPartialSpecificationList(['ad', 'creative-template'], 'v1.0.1');
+  let sl = buildPartialSpecificationList({
+    objects: ['ad', 'creative-template'],
+    version: 'v1.0.1',
+  });
   expect(sl).toStrictEqual([
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/ad.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/creative-template.yaml`,
@@ -98,11 +102,10 @@ test('buildPartialSpecificationList returns a github url if only version specifi
 });
 
 test('buildPartialSpecificationList returns the base path and ignores version if base path specified', () => {
-  let sl = buildPartialSpecificationList(
-    ['ad', 'creative-template'],
-    undefined,
-    '../test/fixtures'
-  );
+  let sl = buildPartialSpecificationList({
+    objects: ['ad', 'creative-template'],
+    basePath: '../test/fixtures',
+  });
   expect(sl).toStrictEqual([
     '../test/fixtures/ad.yaml',
     '../test/fixtures/creative-template.yaml',
@@ -110,9 +113,9 @@ test('buildPartialSpecificationList returns the base path and ignores version if
 });
 
 test('parseSpecifications properly parses and transforms an OpenAPI v3 spec', async () => {
-  let [contract, securitySchemes] = await parseSpecifications([
-    './test/fixtures/petstore.json',
-  ]);
+  let specifications = await fetchSpecifications(['./test/fixtures/petstore.json']);
+
+  let [contract, securitySchemes] = await parseSpecifications(specifications);
 
   expect(securitySchemes).toStrictEqual({
     ApiKeyAuth: {

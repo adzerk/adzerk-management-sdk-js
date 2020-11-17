@@ -35,11 +35,12 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
 };
 
 export interface ClientFactoryOptions {
+  specifications: Array<OpenAPIV3.Document>;
+  apiKey: string;
   protocol?: 'http' | 'https';
   host?: string;
   port?: number;
   logger?: LoggerFunc;
-  specifications?: Array<string>;
 }
 
 export interface RunOptions<TCurrent, TAcc> {
@@ -65,12 +66,12 @@ interface Headers {
 const defaultLogger: LoggerFunc = (lvl, msg, meta) =>
   process.stdout.write(`[${lvl}] ${msg} [${JSON.stringify(meta)}]\n`);
 
-const addQueryParameters = (
+const addQueryParameters = async (
   url: URL,
   parameters: Array<OpenAPIV3.ParameterObject>,
   body: any,
   logger: LoggerFunc
-): string => {
+): Promise<string> => {
   for (let p of parameters) {
     if (p.schema == undefined) {
       continue;
@@ -96,7 +97,8 @@ const addQueryParameters = (
     }
 
     let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
-    url.searchParams.append(p.name, mapper(body[cn]).toString());
+    let value = await mapper(body[cn]);
+    url.searchParams.append(p.name, value.toString());
     if (cn !== 'id') {
       delete body[cn];
     }
@@ -168,22 +170,26 @@ const buildRequestArgs = async (
     schema: obj,
     operation: op,
   });
-  let mapped = propertyMapper(body);
+  let mapped = await propertyMapper(body);
 
   let validationResult = validate(validator, mapped);
 
   if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
     if (validationResult.form == undefined) {
-      logger('error', 'Request body is invalid');
+      await logger('error', 'Request body is invalid');
     } else {
-      logger('error', 'Request body is invalid', validationResult.form.validationErrors);
+      await logger(
+        'error',
+        'Request body is invalid',
+        validationResult.form.validationErrors
+      );
     }
 
     throw 'Request body is invalid';
   }
 
   if (isBooleanValidationResult(validationResult) && !validationResult) {
-    logger('error', 'Request body is invalid');
+    await logger('error', 'Request body is invalid');
   }
 
   requestArgs.body = await serializer(mapped);
@@ -203,10 +209,7 @@ const buildRequestArgs = async (
   return requestArgs;
 };
 
-export const buildClient = async (
-  adzerkApiKey: string,
-  opts: ClientFactoryOptions
-): Promise<Client> => {
+export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   let [spec, securitySchemas] = await parseSpecifications(opts.specifications);
   let logger = opts.logger || defaultLogger;
   let protocol = opts.protocol || 'https';
@@ -238,9 +241,9 @@ export const buildClient = async (
         return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
       }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
-      let href = addQueryParameters(url, operation.queryParameters, body, logger);
+      let href = await addQueryParameters(url, operation.queryParameters, body, logger);
       let headers = buildHeaders(securitySchemas, operation, {
-        ApiKeyAuth: adzerkApiKey,
+        ApiKeyAuth: opts.apiKey,
       });
       let requestArgs = await buildRequestArgs(
         this,
@@ -258,6 +261,7 @@ export const buildClient = async (
 
       let r = await backOff(
         async () => {
+          await logger('info', 'Making request to Adzerk API', { href, requestArgs });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
             throw { type: 'client', code: 429 };
@@ -270,16 +274,15 @@ export const buildClient = async (
             (qOpts?.retryStrategy || 'exponential-jitter') == 'exponential-jitter'
               ? 'full'
               : 'none',
-          retry: (err, attemptNumber) => {
-            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
+          retry: async (err, attemptNumber) => {
+            await logger(
+              'info',
+              `Request was rate limited. This was attempt ${attemptNumber}`
+            );
             return err.code === 429;
           },
         }
       );
-
-      if (!r.ok) {
-        logger('error', 'API Request failed', r);
-      }
 
       if (op !== 'filter') {
         return convertKeysToCamelcase(await r.json());
@@ -294,10 +297,16 @@ export const buildClient = async (
         (qOpts && qOpts.initialValue) || []
       );
 
-      return convertKeysToCamelcase(result);
+      let converted = convertKeysToCamelcase(result);
+
+      if (!r.ok) {
+        await logger('error', 'API Request failed', { response: r, body: converted });
+      }
+
+      return converted;
     },
   };
-};
+}
 
 let handleResponseStream = async <TCurr, TAcc>(
   body: NodeJS.ReadableStream,
