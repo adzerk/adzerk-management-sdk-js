@@ -151,7 +151,7 @@ const buildRequestArgs = async (
   let schemaPropertiesKeys = Object.keys(schema[contentType].properties || {});
   let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) => camelcase(k));
 
-  let unmappedKeys = Object.keys(obj).filter(
+  let unmappedKeys = Object.keys(body).filter(
     (k) => !camelCasedSchemaPropertiesKeys.includes(k)
   );
 
@@ -254,9 +254,14 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   return {
     async run(obj, op, body, qOpts) {
       let operation = spec[obj][op];
-      let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) =>
-        Object.keys((operation.bodySchema || {})[ct]).map((k) => k.toLowerCase())
-      );
+      let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) => {
+        let bodySchema = operation.bodySchema || {};
+        let schema = bodySchema[ct] || {};
+        let properties = schema.properties || {};
+
+        return Object.keys(properties).map((k) => k.toLowerCase());
+      });
+
       let rawBaseUrl = operation.url;
       let baseUrl = operation.pathParameters.reduce((url, parameter) => {
         if (parameter.schema != undefined) {
