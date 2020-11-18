@@ -18,51 +18,45 @@ yarn add @adzerk/management-sdk
 
 ## How It Works
 
-Adzerk's Management SDK takes a data-driven approach to working with our API. This means that all of our operations are driven by OpenAPI documentation found at https://github.com/adzerk/adzerk-api-specification.
+Adzerk's Management SDK takes a data-driven approach to working with our API. This means that all of our operations are driven by OpenAPI documentation found at https://github.com/adzerk/adzerk-api-specification. This means that the SDK Client Factory takes a list of specifications during construction. There are several utility methods for building that specification list, the easiest of which is `buildFullSpecificationList`. You then pass that list to `fetchSpecifications` to load and parse the documents:
 
-By default, the SDK will pull the latest published version of the specifications at runtime. This means that you'll always have access to the latest features available in Adzerk's API. The downside is that the functionality is no longer stable. There's a possibility that breaking changes will be published to the OpenAPI documents.
+```js
+let adzerk = require("@adzerk/management-sdk").default;
+let specificationList = adzerk.buildFullSpecificationList();
+let specifications = await adzerk.fetchSpecifications(specificationList);
+let client = await adzerk.buildClient({ apiKey: "*****", specifications });
+```
 
 We also provide the ability to pin to a specific version of the OpenAPI documents as well. This allows a stable set of functionality but may prevent usage of the latest and greatest features. If you want to take advantage of this, you can use the `buildFullSpecificationList` helper method:
 
 ```js
-const {
-  buildFullSpecificationList,
-  buildClient,
-} = require("@adzerk/management-sdk");
-
-let specificationList = buildFullSpecificationList("v1.0");
-let client = await buildClient({ specifications: specificationList });
+let adzerk = require("@adzerk/management-sdk").default;
+let specificationList = adzerk.buildFullSpecificationList({ version: "v1.0" });
+let specifications = await adzerk.fetchSpecifications(specificationList);
+let client = await adzerk.buildClient({ apiKey: "*****", specifications });
 ```
 
 This will still download and parse the specifications at runtime. We also provide the ability to load the OpenAPI documents from disk. This will save some time and allow you pin to a specific revision (or allow you to patch them yourselves):
 
 ```js
-const {
-  buildFullSpecificationList,
-  buildClient,
-} = require("@adzerk/management-sdk");
-
-let specificationList = buildFullSpecificationList(
-  undefined,
-  "../path/to/repo"
-);
-let client = await buildClient({ specifications: specificationList });
+let adzerk = require("@adzerk/management-sdk").default;
+let specificationList = adzerk.buildFullSpecificationList({
+  basePath: "../path/to/repo ",
+});
+let specifications = await adzerk.fetchSpecifications(specificationList);
+let client = await adzerk.buildClient({ apiKey: "*****", specifications });
 ```
 
 We also provide the ability to specify only the API objects you are interested in. By using this, you'll gain another performance boost as only a handful of documents will be parsed instead of the full set. This method also supports pinning to versions or loading from disk:
 
 ```js
-const {
-  buildPartialSpecificationList,
-  buildClient,
-} = require("@adzerk/management-sdk");
-
-let specificationList = buildPartialSpecificationList(
-  ["campaign", "flight", "ad"],
-  "v1.0"
-);
-
-let client = await buildClient({ specifications: specificationList });
+let adzerk = require("@adzerk/management-sdk").default;
+let specificationList = adzerk.buildPartialSpecificationList({
+  version: "v1.0",
+  objects: ["campaign", "flight", "ad"],
+});
+let specifications = await adzerk.fetchSpecifications(specificationList);
+let client = await adzerk.buildClient({ apiKey: "*****", specifications });
 ```
 
 ## Logging
@@ -82,13 +76,13 @@ If no `logger` is provided as an argument, the default implementation will be us
 The easiest way to integrate is to write a function that handles translating the data from the Adzerk SDK Logger into whatever logging framework you're using in the rest of your application:
 
 ```js
-const { buildClient } = require("@adzerk/management-sdk");
+const adzerk = require("@adzerk/management-sdk").default;
 
 const logger = (level, message, metadata) => {
   console.log(`(${level}) ${message} - ${JSON.stringify(metadata)}`);
 };
 
-let client = await buildClient({ logger });
+let client = await adzerk.buildClient({ logger });
 ```
 
 ## Acquiring API Credentials
