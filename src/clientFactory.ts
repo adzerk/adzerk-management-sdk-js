@@ -21,6 +21,7 @@ import bodySerializerFactory from './bodySerializerFactory';
 import { isComplexValidationResult, isBooleanValidationResult } from './validators';
 import FormData from 'form-data';
 import { convertKeysToCamelcase } from './utils';
+import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
@@ -331,6 +332,14 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
           },
         }
       );
+
+      if (r.status === 204) {
+        return;
+      }
+
+      if (r.status !== 200) {
+        throw r.json();
+      }
 
       if (op !== 'filter') {
         return convertKeysToCamelcase(await r.json());
