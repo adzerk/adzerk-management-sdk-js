@@ -338,7 +338,8 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
       }
 
       if (r.status !== 200) {
-        throw r.json();
+        let json = await r.json();
+        throw json;
       }
 
       if (op !== 'filter') {
