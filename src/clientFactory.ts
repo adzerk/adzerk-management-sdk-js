@@ -3,7 +3,7 @@ import camelcase from 'camelcase';
 import fetch, { RequestInit, HeadersInit } from 'node-fetch';
 import http, { request } from 'http';
 import https from 'https';
-import { OpenAPIV3 } from 'openapi-types';
+import { OpenAPI, OpenAPIV3 } from 'openapi-types';
 import validate from 'strickland';
 import { URL } from 'url';
 
@@ -32,6 +32,7 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   priority: ['update'],
   site: ['update'],
   zone: ['update'],
+  user: ['update'],
 };
 
 export interface ClientFactoryOptions {
@@ -146,6 +147,25 @@ const buildRequestArgs = async (
     throw 'Request requires a request body to be specified';
   }
 
+  let contentType = Object.keys(schema)[0];
+  let schemaPropertiesKeys = Object.keys(schema[contentType].properties || {});
+  let camelCasedSchemaPropertiesKeys = schemaPropertiesKeys.map((k) => camelcase(k));
+
+  let unmappedKeys = Object.keys(body).filter(
+    (k) => !camelCasedSchemaPropertiesKeys.includes(k)
+  );
+
+  for (let k of unmappedKeys) {
+    await logger(
+      'warn',
+      `Property ${k} is not supported by this operation, it will be ignored`,
+      {
+        schema: obj,
+        operation: op,
+      }
+    );
+  }
+
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     let getBody = { id: body.id };
@@ -154,18 +174,29 @@ const buildRequestArgs = async (
     body = { ...response, ...body };
   }
 
-  let idOnlySchema: OpenAPIV3.NonArraySchemaObject = {
-    type: 'object',
-    required: ['Id'],
-    properties: { Id: { type: 'integer', format: 'int32' } },
-  };
+  let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
+    isCapitalized
+      ? {
+          type: 'object',
+          required: ['Id'],
+          properties: { Id: { type: 'integer', format: 'int32' } },
+        }
+      : {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'integer', format: 'int32' } },
+        };
 
-  let contentType = Object.keys(schema)[0];
   let serializer = bodySerializerFactory(contentType);
+  let propertyNames = Object.keys(schema[contentType].properties || {});
+
   let validator = validatorFactory(
-    fetchBeforeSendOperations[obj]?.includes(op) ? idOnlySchema : schema[contentType],
+    fetchBeforeSendOperations[obj]?.includes(op)
+      ? buildIdOnlySchema(propertyNames.includes('Id'))
+      : schema[contentType],
     ''
   );
+
   let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
     schema: obj,
     operation: op,
@@ -223,6 +254,14 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   return {
     async run(obj, op, body, qOpts) {
       let operation = spec[obj][op];
+      let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) => {
+        let bodySchema = operation.bodySchema || {};
+        let schema = bodySchema[ct] || {};
+        let properties = schema.properties || {};
+
+        return Object.keys(properties).map((k) => k.toLowerCase());
+      });
+
       let rawBaseUrl = operation.url;
       let baseUrl = operation.pathParameters.reduce((url, parameter) => {
         if (parameter.schema != undefined) {
@@ -238,10 +277,19 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
             throw `Value for ${parameter.name} is invalid`;
           }
         }
-        return url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
+
+        let newUrl = url.replace(`{${parameter.name}}`, body[camelcase(parameter.name)]);
+        if (!bodySchemaKeys.includes(parameter.name.toLowerCase())) {
+          delete body[parameter.name];
+        }
+        return newUrl;
       }, rawBaseUrl);
       let url = new URL(`${protocol}://${host}:${port}${baseUrl}`);
       let href = await addQueryParameters(url, operation.queryParameters, body, logger);
+      operation.queryParameters
+        .filter((qp) => bodySchemaKeys.includes(qp.name.toLowerCase()))
+        .forEach((qp) => delete body[qp.name]);
+
       let headers = buildHeaders(securitySchemas, operation, {
         ApiKeyAuth: opts.apiKey,
       });
