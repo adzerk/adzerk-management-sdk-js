@@ -84,6 +84,7 @@ export const buildFullSpecificationList = (
     `${basePath}/queued-report.yaml`,
     `${basePath}/scheduled-report.yaml`,
     `${basePath}/real-time-report.yaml`,
+    `${basePath}/day-part.yaml`,
   ];
 };
 

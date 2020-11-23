@@ -28,6 +28,7 @@ test('buildFullSpecificationList returns a master github url if no options speci
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/queued-report.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/scheduled-report.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/real-time-report.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/day-part.yaml`,
   ]);
 });
 
@@ -52,6 +53,7 @@ test('buildFullSpecificationList returns a github url if only version specified'
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/queued-report.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/scheduled-report.yaml`,
     `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/real-time-report.yaml`,
+    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/day-part.yaml`,
   ]);
 });
 
@@ -76,6 +78,7 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
     '../test/fixtures/queued-report.yaml',
     '../test/fixtures/scheduled-report.yaml',
     '../test/fixtures/real-time-report.yaml',
+    '../test/fixtures/day-part.yaml',
   ]);
 });
 
