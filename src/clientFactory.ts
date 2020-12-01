@@ -261,7 +261,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
 
   return {
     async run(obj, op, body, qOpts) {
-      let originalBody = JSON.parse(JSON.stringify(body));
+      let originalBody = body ? JSON.parse(JSON.stringify(body)) : null;
       let operation = spec[obj][op];
       let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) => {
         let bodySchema = operation.bodySchema || {};
