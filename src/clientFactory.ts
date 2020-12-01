@@ -8,20 +8,13 @@ import validate from 'strickland';
 import { URL } from 'url';
 
 import { LoggerFunc } from '.';
-import {
-  parseSpecifications,
-  SecuritySchema,
-  Operation,
-  Method,
-  BodySchema,
-} from './specParser';
+import { parseSpecifications, SecuritySchema, Operation, Method } from './specParser';
 import validatorFactory from './validatorFactory';
 import propertyMapperFactory from './propertyMapperFactory';
 import bodySerializerFactory from './bodySerializerFactory';
 import { isComplexValidationResult, isBooleanValidationResult } from './validators';
 import FormData from 'form-data';
 import { convertKeysToCamelcase } from './utils';
-import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
@@ -137,7 +130,8 @@ const buildRequestArgs = async (
   op: string,
   body: any,
   operation: Operation,
-  logger: LoggerFunc
+  logger: LoggerFunc,
+  originalBody: any
 ) => {
   let requestArgs: RequestInit = { headers, method, agent };
   let schema = operation.bodySchema;
@@ -171,10 +165,11 @@ const buildRequestArgs = async (
 
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
-    let getBody = { id: body.id };
-    let response = await c.run(obj, 'get', getBody);
-
+    logger('debug', 'Fetching existing object before performing update', originalBody);
+    let response = await c.run(obj, 'get', originalBody);
+    logger('debug', 'Received response from get before update', response);
     body = { ...response, ...body };
+    logger('debug', 'Proceeding with the following request body', body);
   }
 
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
@@ -193,12 +188,21 @@ const buildRequestArgs = async (
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
 
-  let validator = validatorFactory(
-    fetchBeforeSendOperations[obj]?.includes(op)
-      ? buildIdOnlySchema(propertyNames.includes('Id'))
-      : schema[contentType],
-    ''
-  );
+  let schemaObject: OpenAPIV3.SchemaObject;
+
+  if (fetchBeforeSendOperations[obj]?.includes(op)) {
+    if (propertyNames.includes('id')) {
+      schemaObject = buildIdOnlySchema(false);
+    } else if (propertyNames.includes('Id')) {
+      schemaObject = buildIdOnlySchema(true);
+    } else {
+      schemaObject = { type: 'object' };
+    }
+  } else {
+    schemaObject = schema[contentType];
+  }
+
+  let validator = validatorFactory(schemaObject, '');
 
   let propertyMapper = propertyMapperFactory(schema[contentType], logger, {
     schema: obj,
@@ -206,6 +210,7 @@ const buildRequestArgs = async (
   });
   let mapped = await propertyMapper(body);
 
+  logger('debug', 'Validating the following request', mapped);
   let validationResult = validate(validator, mapped);
 
   if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
@@ -256,6 +261,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
 
   return {
     async run(obj, op, body, qOpts) {
+      let originalBody = JSON.parse(JSON.stringify(body));
       let operation = spec[obj][op];
       let bodySchemaKeys = Object.keys(operation.bodySchema || {}).flatMap((ct) => {
         let bodySchema = operation.bodySchema || {};
@@ -305,7 +311,8 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         op,
         body,
         operation,
-        logger
+        logger,
+        originalBody
       );
 
       let isRetryEnabled = (qOpts?.retryStrategy || 'exponential-jitter') === 'disabled';
