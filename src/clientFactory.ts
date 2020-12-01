@@ -21,7 +21,7 @@ import bodySerializerFactory from './bodySerializerFactory';
 import { isComplexValidationResult, isBooleanValidationResult } from './validators';
 import FormData from 'form-data';
 import { convertKeysToCamelcase } from './utils';
-import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
+import { openStdin } from 'process';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
@@ -171,8 +171,7 @@ const buildRequestArgs = async (
 
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
-    let getBody = { id: body.id };
-    let response = await c.run(obj, 'get', getBody);
+    let response = await c.run(obj, 'get', body);
 
     body = { ...response, ...body };
   }
