@@ -8,20 +8,13 @@ import validate from 'strickland';
 import { URL } from 'url';
 
 import { LoggerFunc } from '.';
-import {
-  parseSpecifications,
-  SecuritySchema,
-  Operation,
-  Method,
-  BodySchema,
-} from './specParser';
+import { parseSpecifications, SecuritySchema, Operation, Method } from './specParser';
 import validatorFactory from './validatorFactory';
 import propertyMapperFactory from './propertyMapperFactory';
 import bodySerializerFactory from './bodySerializerFactory';
 import { isComplexValidationResult, isBooleanValidationResult } from './validators';
 import FormData from 'form-data';
 import { convertKeysToCamelcase } from './utils';
-import { openStdin } from 'process';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
