@@ -172,11 +172,11 @@ const buildRequestArgs = async (
 
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
-    logger('info', 'Fetching existing object before performing update', originalBody);
+    logger('debug', 'Fetching existing object before performing update', originalBody);
     let response = await c.run(obj, 'get', originalBody);
-    logger('info', 'Received response from get before update', response);
+    logger('debug', 'Received response from get before update', response);
     body = { ...response, ...body };
-    logger('info', 'Proceeding with the following request body', body);
+    logger('debug', 'Proceeding with the following request body', body);
   }
 
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
@@ -217,7 +217,7 @@ const buildRequestArgs = async (
   });
   let mapped = await propertyMapper(body);
 
-  logger('info', 'Validating the following request', mapped);
+  logger('debug', 'Validating the following request', mapped);
   let validationResult = validate(validator, mapped);
 
   if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
