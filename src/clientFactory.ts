@@ -342,17 +342,23 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         }
       );
 
+      let responseBody = await r.text();
+      logger('debug', 'Received the following response from the Adzerk API', {
+        status: r.status,
+        body: responseBody,
+      });
+
       if (r.status === 204) {
         return;
       }
 
-      if (r.status !== 200) {
-        let json = await r.json();
+      if (![200, 201].includes(r.status)) {
+        let json = JSON.parse(responseBody);
         throw json;
       }
 
       if (op !== 'filter') {
-        return convertKeysToCamelcase(await r.json());
+        return convertKeysToCamelcase(JSON.parse(responseBody));
       }
 
       let callback =
