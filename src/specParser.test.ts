@@ -10,52 +10,52 @@ import {
 test('buildFullSpecificationList returns a master github url if no options specified', () => {
   let sl = buildFullSpecificationList();
   expect(sl).toStrictEqual([
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/advertiser.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative-template.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/flight.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad-type.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/campaign.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/channel.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/channel-site-map.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/flight-category.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/geo-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/priority.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/site-zone-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/site.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/zone.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/queued-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/scheduled-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/real-time-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/day-part.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/user.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/advertiser.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative-template.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/flight.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad-type.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/campaign.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/channel.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/channel-site-map.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/flight-category.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/geo-targeting.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/priority.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/site-zone-targeting.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/site.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/zone.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/queued-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/scheduled-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/real-time-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/day-part.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/user.yaml`,
   ]);
 });
 
 test('buildFullSpecificationList returns a github url if only version specified', () => {
   let sl = buildFullSpecificationList({ version: 'v1.0.1' });
   expect(sl).toStrictEqual([
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/advertiser.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/creative-template.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/creative.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/flight.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/ad.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/ad-type.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/campaign.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/channel.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/channel-site-map.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/flight-category.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/geo-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/priority.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/site-zone-targeting.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/site.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/zone.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/queued-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/scheduled-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/real-time-report.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/day-part.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/user.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/advertiser.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative-template.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/flight.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad-type.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/campaign.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/channel.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/channel-site-map.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/flight-category.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/geo-targeting.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/priority.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/site-zone-targeting.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/site.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/zone.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/queued-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/scheduled-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/real-time-report.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/day-part.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/user.yaml`,
   ]);
 });
 
@@ -88,8 +88,8 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
 test('buildPartialSpecificationList returns a master github url if no options specified', () => {
   let sl = buildPartialSpecificationList({ objects: ['ad', 'creative-template'] });
   expect(sl).toStrictEqual([
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/ad.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/master/management/creative-template.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative-template.yaml`,
   ]);
 });
 
@@ -99,8 +99,8 @@ test('buildPartialSpecificationList returns a github url if only version specifi
     version: 'v1.0.1',
   });
   expect(sl).toStrictEqual([
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/ad.yaml`,
-    `https://raw.githubusercontent.com/adzerk/adzerk-api-specification/v1.0.1/management/creative-template.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative-template.yaml`,
   ]);
 });
 

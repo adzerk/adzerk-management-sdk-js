@@ -60,9 +60,11 @@ export interface PartialSpecificationListOptions {
 export const buildFullSpecificationList = (
   opts: FullSpecificationListOptions = {}
 ): Array<string> => {
-  let basePath = opts.version
-    ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
-    : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com';
+  let basePath =
+    opts.basePath ??
+    (opts.version
+      ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
+      : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com');
 
   return [
     `${basePath}/advertiser.yaml`,
@@ -91,9 +93,11 @@ export const buildFullSpecificationList = (
 export const buildPartialSpecificationList = (
   opts: PartialSpecificationListOptions
 ): Array<string> => {
-  let basePath = opts.version
-    ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
-    : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com';
+  let basePath =
+    opts.basePath ??
+    (opts.version
+      ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
+      : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com');
   return opts.objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
