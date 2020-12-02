@@ -28,7 +28,7 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   zone: ['update'],
   user: ['update'],
   siteZoneTargeting: ['update'],
-  geoTarget: ['update'],
+  geoTargeting: ['update'],
 };
 
 export interface ClientFactoryOptions {
