@@ -81,11 +81,14 @@ const addQueryParameters = async (
     if (isOmitted && p.required) {
       throw `${cn} is a required parameter`;
     }
-    if (isOmitted) {
+    if (isOmitted && (p.schema as OpenAPIV3.NonArraySchemaObject).default == null) {
       continue;
     }
 
-    let validationResult = validate(validator, body[cn]);
+    let mapper = await propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
+    let value = await mapper((body || {})[cn]);
+
+    let validationResult = validate(validator, value);
     if (
       (isComplexValidationResult(validationResult) && !validationResult.isValid) ||
       (isBooleanValidationResult(validationResult) && !validationResult)
@@ -93,11 +96,9 @@ const addQueryParameters = async (
       throw `Value for ${cn} is invalid`;
     }
 
-    let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
-    let value = await mapper(body[cn]);
     url.searchParams.append(p.name, value.toString());
     if (cn !== 'id') {
-      delete body[cn];
+      delete (body || {})[cn];
     }
   }
 
