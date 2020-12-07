@@ -26,7 +26,7 @@ let factory = (
       ['binary', 'date', 'date-time'].includes(schema.format || '')
     )
   ) {
-    return obj;
+    return obj != null ? obj : (schema as OpenAPIV3.NonArraySchemaObject).default;
   }
 
   if (schema.type == 'array') {
