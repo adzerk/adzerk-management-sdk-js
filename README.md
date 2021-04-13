@@ -59,6 +59,10 @@ let specifications = await Adzerk.fetchSpecifications(specificationList);
 let client = await Adzerk.buildClient({ apiKey: "*****", specifications });
 ```
 
+## Object, Operation, Parameters Pattern
+
+There is really only one method you will call on the SDK, and that is the `client.run` method. However, it takes at a minimum an object name (like `advertiser`) and a `camelCased` operation name (like `create`, `list`, or `listForCampaign`). Some operations also take a JavaScript object of parameters.
+
 ## Logging
 
 Our logging implementation is meant to be flexible enough to fit into any common NodeJS logging framework.
