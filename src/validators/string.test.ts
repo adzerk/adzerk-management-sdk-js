@@ -15,3 +15,29 @@ test('string validation succeeds if nullable enum and given null', () => {
 
   expect((result as ComplexValidationResult).isValid).toStrictEqual(true);
 });
+
+test('string validation succeeds if nullable enum and value is in enum', () => {
+  let schema: OpenAPIV3.SchemaObject = {
+    type: 'string',
+    nullable: true,
+    enum: ['a', 'b', 'c'],
+  };
+
+  let validator = factory(schema, '');
+  let result = validate(validator, 'b');
+
+  expect((result as ComplexValidationResult).isValid).toStrictEqual(true);
+});
+
+test('string validation fails if nullable enum and value is not in enum', () => {
+  let schema: OpenAPIV3.SchemaObject = {
+    type: 'string',
+    nullable: true,
+    enum: ['a', 'b', 'c'],
+  };
+
+  let validator = factory(schema, '');
+  let result = validate(validator, 'd');
+
+  expect((result as ComplexValidationResult).isValid).toStrictEqual(false);
+});
