@@ -1,18 +1,18 @@
-import camelcase from "camelcase";
-import isValid from "date-fns/isValid";
-import parseISO from "date-fns/parseISO";
-import { Validator } from "strickland";
+import camelcase from 'camelcase';
+import isValid from 'date-fns/isValid';
+import parseISO from 'date-fns/parseISO';
+import { Validator } from 'strickland';
 
-import { ValidatorFactory, wrapNullable } from "./";
-import { isStream } from "../utils";
+import { ValidatorFactory, wrapNullable } from './';
+import { isStream } from '../utils';
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);
   let wn = wrapNullable.bind(null, schema, camelCasePropertyName);
   let validators: Array<Validator> = [];
 
-  if (schema.hasOwnProperty("format")) {
-    if (schema.format === "binary") {
+  if (schema.hasOwnProperty('format')) {
+    if (schema.format === 'binary') {
       validators.push(
         wn(
           (v) =>
@@ -23,13 +23,13 @@ const factory: ValidatorFactory = (schema, propertyName) => {
             }
         )
       );
-    } else if (schema.format === "date" || schema.format === "date-time") {
+    } else if (schema.format === 'date' || schema.format === 'date-time') {
       validators.push((v) => {
         if (!!schema.nullable && v == undefined) {
           return true;
         }
-        let m = "";
-        let d = typeof v === "string" ? parseISO(v) : v;
+        let m = '';
+        let d = typeof v === 'string' ? parseISO(v) : v;
 
         try {
           if (isValid(d)) {
@@ -45,7 +45,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     validators.push(
       wn(
         (v) =>
-          typeof v === "string" || {
+          typeof v === 'string' || {
             isValid: false,
             message: `${camelCasePropertyName} must be a string`,
           }
@@ -53,7 +53,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     );
   }
 
-  if (schema.hasOwnProperty("minLength")) {
+  if (schema.hasOwnProperty('minLength')) {
     validators.push(
       wn(
         (v) =>
@@ -65,7 +65,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     );
   }
 
-  if (schema.hasOwnProperty("maxLength")) {
+  if (schema.hasOwnProperty('maxLength')) {
     validators.push(
       wn(
         (v) =>
@@ -77,8 +77,8 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     );
   }
 
-  if (schema.hasOwnProperty("pattern")) {
-    let re = new RegExp(schema.pattern || "");
+  if (schema.hasOwnProperty('pattern')) {
+    let re = new RegExp(schema.pattern || '');
     validators.push(
       wn((v) => re.test(v)) || {
         isValid: false,
@@ -87,15 +87,17 @@ const factory: ValidatorFactory = (schema, propertyName) => {
     );
   }
 
-  if (schema.hasOwnProperty("enum")) {
+  if (schema.hasOwnProperty('enum')) {
     validators.push(
-      (v) =>
-        (schema.enum != undefined && schema.enum.includes(v)) || {
-          isValid: false,
-          message: `${camelCasePropertyName} must be one of the following: ${(
-            schema.enum || []
-          ).join(", ")}`,
-        }
+      wn(
+        (v) =>
+          (schema.enum != undefined && schema.enum.includes(v)) || {
+            isValid: false,
+            message: `${camelCasePropertyName} must be one of the following: ${(
+              schema.enum || []
+            ).join(', ')}`,
+          }
+      )
     );
   }
 
