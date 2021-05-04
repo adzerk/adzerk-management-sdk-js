@@ -87,6 +87,7 @@ export const buildFullSpecificationList = (
     `${basePath}/real-time-report.yaml`,
     `${basePath}/day-part.yaml`,
     `${basePath}/user.yaml`,
+    `${basePath}/distance-targeting.yaml`,
   ];
 };
 
