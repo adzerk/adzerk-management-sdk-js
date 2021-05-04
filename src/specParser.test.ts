@@ -82,6 +82,7 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
     '../test/fixtures/real-time-report.yaml',
     '../test/fixtures/day-part.yaml',
     '../test/fixtures/user.yaml',
+    `../test/fixtures/distance-targeting.ya`,
   ]);
 });
 
