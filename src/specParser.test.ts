@@ -30,6 +30,7 @@ test('buildFullSpecificationList returns a master github url if no options speci
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/real-time-report.yaml`,
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/day-part.yaml`,
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/user.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/distance-targeting.yaml`,
   ]);
 });
 
@@ -56,6 +57,7 @@ test('buildFullSpecificationList returns a github url if only version specified'
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/real-time-report.yaml`,
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/day-part.yaml`,
     `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/user.yaml`,
+    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/distance-targeting.yaml`,
   ]);
 });
 
