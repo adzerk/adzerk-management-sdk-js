@@ -40,7 +40,7 @@ jobs:
         JF_ARTIFACTORY_SERVER: ${{ secrets.JF_ARTIFACTORY_SERVER_1 }}
     - name: artifactory publish
       run: |
-        npm ci
+        npm install -g npm-force-resolutions
         npm --no-git-tag-version version prerelease --preid=${GITHUB_REF##*/}
         jfrog rt bce adzerk-management-sdk-js ${GITHUB_REF##*/}
         jfrog rt npmci npm
