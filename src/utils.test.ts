@@ -32,11 +32,13 @@ test('convertKeysToCamelcase properly converts object keys', () => {
   let o = {
     Hello: 'World',
     Foo_Bar: 'Baz',
+    20210517: 'asdf',
   };
 
   expect(convertKeysToCamelcase(o)).toStrictEqual({
     hello: 'World',
     fooBar: 'Baz',
+    20210517: 'asdf',
   });
 });
 
