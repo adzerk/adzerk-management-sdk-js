@@ -1,7 +1,8 @@
-import camelcase from "camelcase";
+import camelcase from 'camelcase';
+import { isValid, parseISO } from 'date-fns';
 
 export const isObject = (obj: any) =>
-  typeof obj === "object" &&
+  typeof obj === 'object' &&
   obj !== null &&
   !(obj instanceof RegExp) &&
   !(obj instanceof Error) &&
@@ -15,10 +16,13 @@ export const convertKeysToCamelcase = (obj: any): any => {
     return obj.map((o) => convertKeysToCamelcase(o));
   }
   return Object.keys(obj).reduce(
-    (agg, k) => ((agg[camelcase(k)] = convertKeysToCamelcase(obj[k])), agg),
+    // (agg, k) => ((agg[camelcase(k)] = convertKeysToCamelcase(obj[k])), agg),
+    (agg, k) => (
+      (agg[parseISO(k) ? k : camelcase(k)] = convertKeysToCamelcase(obj[k])), agg
+    ),
     {} as any
   );
 };
 
 export const isStream = (obj: any) =>
-  typeof obj === "object" && typeof obj.pipe === "function";
+  typeof obj === 'object' && typeof obj.pipe === 'function';
