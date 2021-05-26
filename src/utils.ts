@@ -15,10 +15,10 @@ export const convertKeysToCamelcase = (obj: any): any => {
   if (Array.isArray(obj)) {
     return obj.map((o) => convertKeysToCamelcase(o));
   }
+
   return Object.keys(obj).reduce(
-    // (agg, k) => ((agg[camelcase(k)] = convertKeysToCamelcase(obj[k])), agg),
     (agg, k) => (
-      (agg[parseISO(k) ? k : camelcase(k)] = convertKeysToCamelcase(obj[k])), agg
+      (agg[/[a-zA-Z]/g.test(k) ? camelcase(k) : k] = convertKeysToCamelcase(obj[k])), agg
     ),
     {} as any
   );
