@@ -38,6 +38,7 @@ export interface ClientFactoryOptions {
   host?: string;
   port?: number;
   logger?: LoggerFunc;
+  additionalVersionInfo?: string;
 }
 
 export interface RunOptions<TCurrent, TAcc> {
@@ -109,10 +110,17 @@ const buildHeaders = (
   securitySchemes: SecuritySchema,
   operation: Operation,
   keys: any,
-  existingHeaders: Headers = {}
+  existingHeaders: Headers = {},
+  additionalVersionInfo?: string
 ) => {
-  existingHeaders['X-Adzerk-Sdk-Version'] =
-    'adzerk-management-sdk-js:{NPM_PACKAGE_VERSION}';
+  let versionString = 'adzerk-management-sdk-js:{NPM_PACKAGE_VERSION}';
+
+  if (!!additionalVersionInfo) {
+    existingHeaders['X-Adzerk-Sdk-Version'] = `${versionString};${additionalVersionInfo}`;
+  } else {
+    existingHeaders['X-Adzerk-Sdk-Version'] = versionString;
+  }
+
   return operation.securitySchemes.reduce((headers, ss) => {
     if (!securitySchemes[ss] || securitySchemes[ss].in !== 'header') {
       return headers;
