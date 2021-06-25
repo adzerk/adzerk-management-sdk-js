@@ -110,8 +110,8 @@ const buildHeaders = (
   securitySchemes: SecuritySchema,
   operation: Operation,
   keys: any,
-  existingHeaders: Headers = {},
-  additionalVersionInfo?: string
+  additionalVersionInfo?: string,
+  existingHeaders: Headers = {}
 ) => {
   let versionString = 'adzerk-management-sdk-js:{NPM_PACKAGE_VERSION}';
 
@@ -308,9 +308,14 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         .filter((qp) => bodySchemaKeys.includes(qp.name.toLowerCase()))
         .forEach((qp) => delete body[qp.name]);
 
-      let headers = buildHeaders(securitySchemas, operation, {
-        ApiKeyAuth: opts.apiKey,
-      });
+      let headers = buildHeaders(
+        securitySchemas,
+        operation,
+        {
+          ApiKeyAuth: opts.apiKey,
+        },
+        opts.additionalVersionInfo
+      );
       let requestArgs = await buildRequestArgs(
         this,
         headers,
