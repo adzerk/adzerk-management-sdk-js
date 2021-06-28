@@ -116,7 +116,7 @@ const buildHeaders = (
   let versionString = 'adzerk-management-sdk-js:{NPM_PACKAGE_VERSION}';
 
   if (!!additionalVersionInfo) {
-    existingHeaders['X-Adzerk-Sdk-Version'] = `${versionString};${additionalVersionInfo}`;
+    existingHeaders['X-Adzerk-Sdk-Version'] = `${additionalVersionInfo};${versionString}`;
   } else {
     existingHeaders['X-Adzerk-Sdk-Version'] = versionString;
   }
