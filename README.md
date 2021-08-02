@@ -31,7 +31,9 @@ We also provide the ability to pin to a specific version of the OpenAPI document
 
 ```js
 let Adzerk = require("@adzerk/management-sdk");
-let specificationList = Adzerk.buildFullSpecificationList({ version: "v1.0" });
+let specificationList = Adzerk.buildFullSpecificationList({
+  version: "v1.0.1",
+});
 let specifications = await Adzerk.fetchSpecifications(specificationList);
 let client = await Adzerk.buildClient({ apiKey: "*****", specifications });
 ```
@@ -52,7 +54,7 @@ We also provide the ability to specify only the API objects you are interested i
 ```js
 let Adzerk = require("@adzerk/management-sdk");
 let specificationList = Adzerk.buildPartialSpecificationList({
-  version: "v1.0",
+  version: "v1.0.1",
   objects: ["campaign", "flight", "ad"],
 });
 let specifications = await Adzerk.fetchSpecifications(specificationList);
