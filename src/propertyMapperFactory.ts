@@ -1,6 +1,5 @@
 import camelcase from 'camelcase';
 import format from 'date-fns/format';
-import parseISO from 'date-fns/parseISO';
 import parseJSON from 'date-fns/parseJSON';
 import formatRFC3339 from 'date-fns/formatRFC3339';
 import { OpenAPIV3 } from 'openapi-types';
