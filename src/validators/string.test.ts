@@ -41,3 +41,29 @@ test('string validation fails if nullable enum and value is not in enum', () => 
 
   expect((result as ComplexValidationResult).isValid).toStrictEqual(false);
 });
+
+test('string validation fails if date string is too long', () => {
+  let schema: OpenAPIV3.SchemaObject = {
+    type: 'string',
+    format: 'date',
+    nullable: true,
+  };
+
+  let validator = factory(schema, '');
+  let result = validate(validator, '2021-09-01T');
+
+  expect((result as ComplexValidationResult).isValid).toStrictEqual(false);
+});
+
+test('string validation passes if date string is a date', () => {
+  let schema: OpenAPIV3.SchemaObject = {
+    type: 'string',
+    format: 'date',
+    nullable: true,
+  };
+
+  let validator = factory(schema, '');
+  let result = validate(validator, '2021-09-01');
+
+  expect((result as ComplexValidationResult).isValid).toStrictEqual(true);
+});
