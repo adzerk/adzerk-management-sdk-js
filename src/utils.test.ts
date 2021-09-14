@@ -50,6 +50,38 @@ test('convertKeysToCamelcase properly converts arrays of objects', () => {
   ]);
 });
 
+test('convertKeysToCamelcase properly converts arrays of objects of objects', () => {
+  let o = {
+    Bruce: 'Bensel',
+    Rocky: [
+      {
+        Hello: 'World',
+      },
+      {
+        Foo_Bar: {
+          Bar: 'Foo',
+          Foo: 'Bar',
+        },
+      },
+    ],
+  };
+  expect(convertKeysToCamelcase(o)).toStrictEqual({
+    bruce: 'Bensel',
+    rocky: [
+      {
+        hello: 'World',
+      },
+      {
+        fooBar: {
+          bar: 'Foo',
+          foo: 'Bar',
+        },
+      },
+    ],
+  });
+  console.log(convertKeysToCamelcase(o));
+});
+
 test('convertKeysToCamelcase does not mangle primitives', () => {
   expect(convertKeysToCamelcase(1)).toBe(1);
   expect(convertKeysToCamelcase('test')).toBe('test');
