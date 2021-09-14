@@ -52,8 +52,8 @@ test('convertKeysToCamelcase properly converts arrays of objects', () => {
 
 test('convertKeysToCamelcase properly converts arrays of objects of objects', () => {
   let o = {
-    Bruce: 'Bensel',
-    Rocky: [
+    Baz: 'FooBar',
+    Bar_Baz: [
       {
         Hello: 'World',
       },
@@ -66,8 +66,8 @@ test('convertKeysToCamelcase properly converts arrays of objects of objects', ()
     ],
   };
   expect(convertKeysToCamelcase(o)).toStrictEqual({
-    bruce: 'Bensel',
-    rocky: [
+    baz: 'FooBar',
+    barBaz: [
       {
         hello: 'World',
       },
