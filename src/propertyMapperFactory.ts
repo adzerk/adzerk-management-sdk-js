@@ -71,6 +71,24 @@ let factory = (
     return formatRFC3339(d);
   }
 
+  if (schema.type === 'object' && !schema.properties) {
+    if (typeof obj !== 'object') {
+      return obj;
+    }
+    let keys = Object.keys(obj);
+    let values = Object.values(obj);
+    let newObj: { [k: string]: any } = {};
+    keys.forEach(function (key) {
+      let k = camelcase(key, { pascalCase: true });
+      values.forEach(function (value) {
+        newObj[k] = value;
+      });
+      return newObj;
+    });
+    obj = newObj;
+    return obj;
+  }
+
   if (!schema.properties) {
     return obj;
   }
