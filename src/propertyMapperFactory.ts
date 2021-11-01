@@ -71,7 +71,9 @@ let factory = (
     return formatRFC3339(d);
   }
 
-  if (schema.type === 'object' && !schema.properties) {
+  console.log(schema);
+
+  if (schema.propertyCasing) {
     if (typeof obj !== 'object') {
       return obj;
     }
