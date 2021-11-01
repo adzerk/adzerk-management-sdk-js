@@ -1,6 +1,6 @@
 import camelcase from 'camelcase';
 import format from 'date-fns/format';
-import parseISO from 'date-fns/parseISO';
+import parseJSON from 'date-fns/parseJSON';
 import formatRFC3339 from 'date-fns/formatRFC3339';
 import { OpenAPIV3 } from 'openapi-types';
 import fsl from 'fs';
@@ -59,12 +59,15 @@ let factory = (
 
   if (schema.type === 'string' && schema.format === 'date') {
     await logger('debug', 'Parsing date when mapping');
-    let d = typeof obj === 'string' ? parseISO(obj) : obj;
+    // using parseISO was causing a shift in timezone because iso values don't
+    // include timezone. parseJSON assumes UTC but only works if a time is provided.
+    // In this case, we can default a time value and proceed.
+    let d = typeof obj === 'string' ? parseJSON(`${obj}T00:00:00.0000000`) : obj;
     return format(d, 'yyyy-MM-dd');
   }
 
   if (schema.type === 'string' && schema.format === 'date-time') {
-    let d = typeof obj === 'string' ? parseISO(obj) : obj;
+    let d = typeof obj === 'string' ? parseJSON(obj) : obj;
     return formatRFC3339(d);
   }
 

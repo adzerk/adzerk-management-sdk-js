@@ -1,6 +1,6 @@
 import camelcase from 'camelcase';
 import isValid from 'date-fns/isValid';
-import parseISO from 'date-fns/parseISO';
+import parseJSON from 'date-fns/parseJSON';
 import { Validator } from 'strickland';
 
 import { ValidatorFactory, wrapNullable } from './';
@@ -23,13 +23,38 @@ const factory: ValidatorFactory = (schema, propertyName) => {
             }
         )
       );
-    } else if (schema.format === 'date' || schema.format === 'date-time') {
+    } else if (schema.format === 'date-time') {
       validators.push((v) => {
         if (!!schema.nullable && v == undefined) {
           return true;
         }
         let m = '';
-        let d = typeof v === 'string' ? parseISO(v) : v;
+        let d = typeof v === 'string' ? parseJSON(v) : v;
+
+        try {
+          if (isValid(d)) {
+            return true;
+          }
+          m = `${camelCasePropertyName} must be a valid Date`;
+        } catch {}
+
+        return { isValid: false, message: m };
+      });
+    } else if (schema.format === 'date') {
+      validators.push((v) => {
+        if (!!schema.nullable && v == undefined) {
+          return true;
+        }
+
+        if (typeof v === 'string' && v.length > 10) {
+          return {
+            isValid: false,
+            message: `Date string provided for ${camelCasePropertyName} must be date-only`,
+          };
+        }
+
+        let m = '';
+        let d = typeof v === 'string' ? parseJSON(`${v}T00:00:00.0000000`) : v;
 
         try {
           if (isValid(d)) {
