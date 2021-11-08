@@ -73,7 +73,7 @@ let factory = (
 
   console.log(schema);
 
-  if (schema.propertyCasing) {
+  if ((schema as any)['x-pascal-casing']) {
     if (typeof obj !== 'object') {
       return obj;
     }
