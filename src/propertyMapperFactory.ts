@@ -71,8 +71,6 @@ let factory = (
     return formatRFC3339(d);
   }
 
-  console.log(schema);
-
   if ((schema as any)['x-pascal-casing']) {
     if (typeof obj !== 'object') {
       return obj;
