@@ -71,18 +71,15 @@ let factory = (
     return formatRFC3339(d);
   }
 
-  if ((schema as any)['x-pascal-casing']) {
+  if ((schema as any)['x-property-casing']) {
     if (typeof obj !== 'object') {
       return obj;
     }
     let keys = Object.keys(obj);
-    let values = Object.values(obj);
     let newObj: { [k: string]: any } = {};
     keys.forEach(function (key) {
       let k = camelcase(key, { pascalCase: true });
-      values.forEach(function (value) {
-        newObj[k] = value;
-      });
+      newObj[k] = obj[key];
       return newObj;
     });
     obj = newObj;
