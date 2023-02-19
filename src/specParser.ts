@@ -63,8 +63,8 @@ export const buildFullSpecificationList = (
   let basePath =
     opts.basePath ??
     (opts.version
-      ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
-      : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com');
+      ? `https://openapi.kevel.co/${opts.version}`
+      : 'https://openapi.kevel.co');
 
   return [
     `${basePath}/advertiser.yaml`,
@@ -97,8 +97,8 @@ export const buildPartialSpecificationList = (
   let basePath =
     opts.basePath ??
     (opts.version
-      ? `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/${opts.version}`
-      : 'http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com');
+      ? `https://openapi.kevel.co/${opts.version}`
+      : 'https://openapi.kevel.co');
   return opts.objects.map((o) => `${basePath}/${o}.yaml`);
 };
 
