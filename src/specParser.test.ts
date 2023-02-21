@@ -10,54 +10,54 @@ import {
 test('buildFullSpecificationList returns a master github url if no options specified', () => {
   let sl = buildFullSpecificationList();
   expect(sl).toStrictEqual([
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/advertiser.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative-template.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/flight.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad-type.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/campaign.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/channel.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/channel-site-map.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/flight-category.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/geo-targeting.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/priority.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/site-zone-targeting.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/site.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/zone.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/queued-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/scheduled-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/real-time-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/day-part.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/user.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/distance-targeting.yaml`,
+    `https://openapi.kevel.co/advertiser.yaml`,
+    `https://openapi.kevel.co/creative-template.yaml`,
+    `https://openapi.kevel.co/creative.yaml`,
+    `https://openapi.kevel.co/flight.yaml`,
+    `https://openapi.kevel.co/ad.yaml`,
+    `https://openapi.kevel.co/ad-type.yaml`,
+    `https://openapi.kevel.co/campaign.yaml`,
+    `https://openapi.kevel.co/channel.yaml`,
+    `https://openapi.kevel.co/channel-site-map.yaml`,
+    `https://openapi.kevel.co/flight-category.yaml`,
+    `https://openapi.kevel.co/geo-targeting.yaml`,
+    `https://openapi.kevel.co/priority.yaml`,
+    `https://openapi.kevel.co/site-zone-targeting.yaml`,
+    `https://openapi.kevel.co/site.yaml`,
+    `https://openapi.kevel.co/zone.yaml`,
+    `https://openapi.kevel.co/queued-report.yaml`,
+    `https://openapi.kevel.co/scheduled-report.yaml`,
+    `https://openapi.kevel.co/real-time-report.yaml`,
+    `https://openapi.kevel.co/day-part.yaml`,
+    `https://openapi.kevel.co/user.yaml`,
+    `https://openapi.kevel.co/distance-targeting.yaml`,
   ]);
 });
 
 test('buildFullSpecificationList returns a github url if only version specified', () => {
   let sl = buildFullSpecificationList({ version: 'v1.0.1' });
   expect(sl).toStrictEqual([
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/advertiser.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative-template.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/flight.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad-type.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/campaign.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/channel.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/channel-site-map.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/flight-category.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/geo-targeting.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/priority.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/site-zone-targeting.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/site.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/zone.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/queued-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/scheduled-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/real-time-report.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/day-part.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/user.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/distance-targeting.yaml`,
+    `https://openapi.kevel.co/v1.0.1/advertiser.yaml`,
+    `https://openapi.kevel.co/v1.0.1/creative-template.yaml`,
+    `https://openapi.kevel.co/v1.0.1/creative.yaml`,
+    `https://openapi.kevel.co/v1.0.1/flight.yaml`,
+    `https://openapi.kevel.co/v1.0.1/ad.yaml`,
+    `https://openapi.kevel.co/v1.0.1/ad-type.yaml`,
+    `https://openapi.kevel.co/v1.0.1/campaign.yaml`,
+    `https://openapi.kevel.co/v1.0.1/channel.yaml`,
+    `https://openapi.kevel.co/v1.0.1/channel-site-map.yaml`,
+    `https://openapi.kevel.co/v1.0.1/flight-category.yaml`,
+    `https://openapi.kevel.co/v1.0.1/geo-targeting.yaml`,
+    `https://openapi.kevel.co/v1.0.1/priority.yaml`,
+    `https://openapi.kevel.co/v1.0.1/site-zone-targeting.yaml`,
+    `https://openapi.kevel.co/v1.0.1/site.yaml`,
+    `https://openapi.kevel.co/v1.0.1/zone.yaml`,
+    `https://openapi.kevel.co/v1.0.1/queued-report.yaml`,
+    `https://openapi.kevel.co/v1.0.1/scheduled-report.yaml`,
+    `https://openapi.kevel.co/v1.0.1/real-time-report.yaml`,
+    `https://openapi.kevel.co/v1.0.1/day-part.yaml`,
+    `https://openapi.kevel.co/v1.0.1/user.yaml`,
+    `https://openapi.kevel.co/v1.0.1/distance-targeting.yaml`,
   ]);
 });
 
@@ -91,8 +91,8 @@ test('buildFullSpecificationList returns the base path and ignores version if ba
 test('buildPartialSpecificationList returns a master github url if no options specified', () => {
   let sl = buildPartialSpecificationList({ objects: ['ad', 'creative-template'] });
   expect(sl).toStrictEqual([
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/ad.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/creative-template.yaml`,
+    `https://openapi.kevel.co/ad.yaml`,
+    `https://openapi.kevel.co/creative-template.yaml`,
   ]);
 });
 
@@ -102,8 +102,8 @@ test('buildPartialSpecificationList returns a github url if only version specifi
     version: 'v1.0.1',
   });
   expect(sl).toStrictEqual([
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/ad.yaml`,
-    `http://developer-exp-management-api-specification.s3-website-us-east-1.amazonaws.com/v1.0.1/creative-template.yaml`,
+    `https://openapi.kevel.co/v1.0.1/ad.yaml`,
+    `https://openapi.kevel.co/v1.0.1/creative-template.yaml`,
   ]);
 });
 
