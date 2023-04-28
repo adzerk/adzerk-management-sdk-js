@@ -1,4 +1,5 @@
 import camelcase from 'camelcase';
+import mapObject from 'map-obj';
 import format from 'date-fns/format';
 import parseJSON from 'date-fns/parseJSON';
 import formatRFC3339 from 'date-fns/formatRFC3339';
@@ -75,13 +76,11 @@ let factory = (
     if (typeof obj !== 'object') {
       return obj;
     }
-    let keys = Object.keys(obj);
-    let newObj: { [k: string]: any } = {};
-    keys.forEach(function (key) {
-      let k = camelcase(key, { pascalCase: true });
-      newObj[k] = obj[key];
-      return newObj;
-    });
+    let newObj = mapObject(
+      obj,
+      (k, v) => [camelcase(k as string, { pascalCase: true }), v],
+      { deep: true }
+    );
     obj = newObj;
     return obj;
   }
