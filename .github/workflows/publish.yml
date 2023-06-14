@@ -1,7 +1,14 @@
 name: Publish NPM Package
+
 on:
   release:
     types: [published]
+
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  NPM_REGISTRY: https://registry.npmjs.org
+  NPM_SECRET: ${{ secrets.NPM_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest

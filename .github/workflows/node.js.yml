@@ -5,6 +5,10 @@ name: Node.js CI
 
 on: [push]
 
+env:
+  NPM_REGISTRY: https://npm.pkg.github.com
+  NPM_SECRET: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,23 +29,19 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v3
     - name: Use Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
-        node-version: 12.x
-    - name: Setup JFrog CLI
-      uses: jfrog/setup-jfrog-cli@v1
-      env:
-        JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
-    - name: artifactory publish
-      run: |
-        npm install -g npm-force-resolutions
-        jfrog rt bce adzerk-management-sdk-js ${GITHUB_REF##*/}
-        jfrog rt npmci npm
-        npm run build --if-present
-        npm --no-git-tag-version version prerelease --preid=${GITHUB_REF##*/}
-        jfrog rt npmp npm
-      env:
-        CI_USERNAME_PASSWORD: ${{secrets.ci_username_password}}
-        CI: true
+        node-version: 18
+    - name: Install npm-force-resolutions
+      run: npm install -g npm-force-resolutions
+    - name: Install dependencies
+      run: npm install
+    - name: Build Package
+      run: npm run build --if-present
+    - name: Tag Version
+      run: npm --no-git-tag-version version prerelease --preid=${GITHUB_REF##*/}-${GITHUB_SHA:0:8}
+    - name: Publish to GitHub NPM Registry
+      run: npm publish
