@@ -48,7 +48,7 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.0",
     "array.prototype.flatmap": "^1.2.3",
-    "camelcase": "^6.0.0",
+    "camelcase": "^7.0.1",
     "concat-stream": "^2.0.0",
     "date-fns": "^2.30.0",
     "deepmerge": "^4.3.1",
