@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "jest --passWithNoTests",
-    "build": "tsc && sed -i \"s/{NPM_PACKAGE_VERSION}/$npm_package_version/g\" lib/clientFactory.js"
+    "build": "tsc && sed -i \"s/{NPM_PACKAGE_VERSION}/$npm_package_version/g\" lib/clientFactory.js",
+    "clean": "rm -rf lib"
   },
   "repository": {
     "type": "git",
@@ -52,15 +53,15 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.0",
     "array.prototype.flatmap": "^1.2.3",
-    "camelcase": "^6.0.0",
+    "camelcase": "^6.3.0",
     "concat-stream": "^2.0.0",
     "date-fns": "^2.30.0",
     "deepmerge": "^4.3.1",
-    "exponential-backoff": "^3.1.0",
+    "exponential-backoff": "^3.1.1",
     "file-type": "^16.5.4",
     "form-data": "^4.0.0",
     "map-obj": "^4.3.0",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.6.12",
     "openapi-types": "^1.3.5",
     "strickland": "^2.2.0"
   },
