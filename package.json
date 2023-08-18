@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "jest --passWithNoTests",
-    "build": "tsc ./src && sed -i \"s/{NPM_PACKAGE_VERSION}/$npm_package_version/g\" lib/clientFactory.js"
+    "build": "tsc && sed -i \"s/{NPM_PACKAGE_VERSION}/$npm_package_version/g\" lib/clientFactory.js"
   },
   "repository": {
     "type": "git",
