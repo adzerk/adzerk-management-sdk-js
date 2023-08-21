@@ -86,7 +86,7 @@ const addQueryParameters = async (
       continue;
     }
 
-    let mapper = await propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
+    let mapper = propertyMapperFactory(p.schema as OpenAPIV3.SchemaObject, logger);
     let value = await mapper((body || {})[cn]);
 
     let validationResult = validate(validator, value);
@@ -162,7 +162,7 @@ const buildRequestArgs = async (
   );
 
   for (let k of unmappedKeys) {
-    await logger(
+    logger(
       'warn',
       `Property ${k} is not supported by this operation, it will be ignored`,
       {
@@ -184,15 +184,15 @@ const buildRequestArgs = async (
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
-          type: 'object',
-          required: ['Id'],
-          properties: { Id: { type: 'integer', format: 'int32' } },
-        }
+        type: 'object',
+        required: ['Id'],
+        properties: { Id: { type: 'integer', format: 'int32' } },
+      }
       : {
-          type: 'object',
-          required: ['id'],
-          properties: { id: { type: 'integer', format: 'int32' } },
-        };
+        type: 'object',
+        required: ['id'],
+        properties: { id: { type: 'integer', format: 'int32' } },
+      };
 
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
@@ -224,9 +224,9 @@ const buildRequestArgs = async (
 
   if (isComplexValidationResult(validationResult) && !validationResult.isValid) {
     if (validationResult.form == undefined) {
-      await logger('error', 'Request body is invalid');
+      logger('error', 'Request body is invalid');
     } else {
-      await logger(
+      logger(
         'error',
         'Request body is invalid',
         validationResult.form.validationErrors
@@ -237,7 +237,7 @@ const buildRequestArgs = async (
   }
 
   if (isBooleanValidationResult(validationResult) && !validationResult) {
-    await logger('error', 'Request body is invalid');
+    logger('error', 'Request body is invalid');
   }
 
   requestArgs.body = await serializer(mapped);
@@ -333,7 +333,16 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
 
       let r = await backOff(
         async () => {
-          await logger('info', 'Making request to Adzerk API', { href, requestArgs });
+          logger('info', 'Making request to Adzerk API', {
+            href,
+            requestArgs: {
+              ...requestArgs,
+              headers: {
+                ...requestArgs.headers,
+                'X-Adzerk-ApiKey': undefined
+              }
+            }
+          });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
             throw { type: 'client', code: 429 };
@@ -347,7 +356,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
               ? 'full'
               : 'none',
           retry: async (err, attemptNumber) => {
-            await logger(
+            logger(
               'info',
               `Request was rate limited. This was attempt ${attemptNumber}`
             );
@@ -360,24 +369,20 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         return;
       }
 
-      if (![200, 201].includes(r.status)) {
-        let responseBody = await r.text();
-        logger('debug', 'Received the following response from the Adzerk API', {
-          status: r.status,
-          body: responseBody,
-        });
+      let responseBody = await r.json();
 
-        let json = JSON.parse(responseBody);
-        throw json;
+      logger('debug', 'Received the following response from the Adzerk API', {
+        status: r.status,
+        body: responseBody,
+      });
+
+
+      if (![200, 201].includes(r.status)) {
+        throw responseBody;
       }
 
       if (op !== 'filter') {
-        let responseBody = await r.text();
-        logger('debug', 'Received the following response from the Adzerk API', {
-          status: r.status,
-          body: responseBody,
-        });
-        return convertKeysToCamelcase(JSON.parse(responseBody));
+        return convertKeysToCamelcase(responseBody);
       }
 
       let callback =
@@ -392,7 +397,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
       let converted = convertKeysToCamelcase(result);
 
       if (!r.ok) {
-        await logger('error', 'API Request failed', { response: r, body: converted });
+        logger('error', 'API Request failed', { response: r, body: converted });
       }
 
       return converted;

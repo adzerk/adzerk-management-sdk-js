@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "lib": ["es2019", "es2019.array"],
     "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["ES2019", "ES2019.Array"],
+    "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
     "strict": true,
     "strictPropertyInitialization": false,
-    "types": ["node", "jest"],
-    "esModuleInterop": true,
-    "outDir": "lib"
+    "target": "es5",
+    "types": ["node", "jest"]
   }
 }
