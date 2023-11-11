@@ -76,6 +76,7 @@ export const buildFullSpecificationList = (
     `${basePath}/campaign.yaml`,
     `${basePath}/channel.yaml`,
     `${basePath}/channel-site-map.yaml`,
+    `${basePath}/entity-counts.yaml`,
     `${basePath}/flight-category.yaml`,
     `${basePath}/geo-targeting.yaml`,
     `${basePath}/priority.yaml`,
