@@ -31,6 +31,27 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   geoTargeting: ['update'],
 };
 
+type PreProcess = {
+  flight?: ((flight: { [key: string]: any }) => { [key: string]: any })[];
+};
+
+const preProcessing: PreProcess = {
+  flight: [
+    (flight: { [key: string]: any }) => {
+      let dailyCapAmount = flight['dailyCapAmount'];
+      return dailyCapAmount
+        ? { ...flight, dailyCapAmountDecimal: dailyCapAmount }
+        : flight;
+    },
+    (flight: { [key: string]: any }) => {
+      let lifetimeCapAmount = flight['lifetimeCapAmount'];
+      return lifetimeCapAmount
+        ? { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount }
+        : flight;
+    },
+  ],
+};
+
 export interface ClientFactoryOptions {
   specifications: Array<OpenAPIV3.Document>;
   apiKey: string;
@@ -172,6 +193,13 @@ const buildRequestArgs = async (
     );
   }
 
+  let preProcessed = preProcessing.flight;
+
+  if(preProcessed) {
+    let processed = preProcessed.reduce((reduction, current) => current(reduction), body);
+    body = processed;
+  }
+
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     logger('debug', 'Fetching existing object before performing update', originalBody);
@@ -184,15 +212,15 @@ const buildRequestArgs = async (
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
-        type: 'object',
-        required: ['Id'],
-        properties: { Id: { type: 'integer', format: 'int32' } },
-      }
+          type: 'object',
+          required: ['Id'],
+          properties: { Id: { type: 'integer', format: 'int32' } },
+        }
       : {
-        type: 'object',
-        required: ['id'],
-        properties: { id: { type: 'integer', format: 'int32' } },
-      };
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'integer', format: 'int32' } },
+        };
 
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
@@ -226,11 +254,7 @@ const buildRequestArgs = async (
     if (validationResult.form == undefined) {
       logger('error', 'Request body is invalid');
     } else {
-      logger(
-        'error',
-        'Request body is invalid',
-        validationResult.form.validationErrors
-      );
+      logger('error', 'Request body is invalid', validationResult.form.validationErrors);
     }
 
     throw 'Request body is invalid';
@@ -339,9 +363,9 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
               ...requestArgs,
               headers: {
                 ...requestArgs.headers,
-                'X-Adzerk-ApiKey': undefined
-              }
-            }
+                'X-Adzerk-ApiKey': undefined,
+              },
+            },
           });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
@@ -356,10 +380,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
               ? 'full'
               : 'none',
           retry: async (err, attemptNumber) => {
-            logger(
-              'info',
-              `Request was rate limited. This was attempt ${attemptNumber}`
-            );
+            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
             return err.code === 429;
           },
         }
@@ -375,7 +396,6 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         status: r.status,
         body: responseBody,
       });
-
 
       if (![200, 201].includes(r.status)) {
         throw responseBody;
