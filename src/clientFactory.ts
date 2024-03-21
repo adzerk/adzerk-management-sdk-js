@@ -31,26 +31,38 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   geoTargeting: ['update'],
 };
 
-type PreProcess = {
-  flight?: ((flight: { [key: string]: any }) => { [key: string]: any })[];
-};
+/**
+ * Definition of processor for entity.
+ */
+type Processor = (entity: { [key: string]: any }) => { [key: string]: any };
 
-const preProcessing: PreProcess = {
-  flight: [
-    (flight: { [key: string]: any }) => {
-      let dailyCapAmount = flight['dailyCapAmount'];
-      return dailyCapAmount
-        ? { ...flight, dailyCapAmountDecimal: dailyCapAmount }
-        : flight;
-    },
-    (flight: { [key: string]: any }) => {
-      let lifetimeCapAmount = flight['lifetimeCapAmount'];
-      return lifetimeCapAmount
-        ? { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount }
-        : flight;
-    },
+/**
+ * Map of preprocessors for any endpoints that require it.
+ */
+const preProcessors: Map<string, Map<string, Processor[]>> = new Map([
+  [
+    'flight',
+    new Map<string, Processor[]>([
+      [
+        'update',
+        [
+          (flight: { [key: string]: any }) => {
+            let dailyCapAmount = flight['dailyCapAmount'];
+            return dailyCapAmount
+              ? { ...flight, dailyCapAmountDecimal: dailyCapAmount }
+              : flight;
+          },
+          (flight: { [key: string]: any }) => {
+            let lifetimeCapAmount = flight['lifetimeCapAmount'];
+            return lifetimeCapAmount
+              ? { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount }
+              : flight;
+          },
+        ],
+      ],
+    ]),
   ],
-};
+]);
 
 export interface ClientFactoryOptions {
   specifications: Array<OpenAPIV3.Document>;
@@ -193,10 +205,14 @@ const buildRequestArgs = async (
     );
   }
 
-  let preProcessed = preProcessing.flight;
+  // We need to handle any pre-processing that is required.
+  const p = preProcessors.get(obj)?.get(op);
 
-  if(preProcessed) {
-    let processed = preProcessed.reduce((reduction, current) => current(reduction), body);
+  if (p) {
+    const processed = p.reduce(
+      (reduction, current) => current(reduction),
+      body
+    );
     body = processed;
   }
 
