@@ -37,6 +37,33 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
 type Processor = (entity: { [key: string]: any }) => { [key: string]: any };
 
 /**
+ * Generate cap amount processor with given field names.
+ * 
+ * @param param0 input parameters.
+ * @returns Cap amount processor.
+ */
+const generateCapAmountProcessor =
+  ({
+    capAmountName,
+    capAmountDecimalName,
+  }: {
+    capAmountName: string;
+    capAmountDecimalName: string;
+  }) =>
+  (flight: { [key: string]: any }) => {
+    let capAmount = flight[capAmountName];
+    let capAmountDecimal = flight[capAmountDecimalName];
+    if (capAmount && !capAmountDecimal) {
+      return { ...flight, [capAmountDecimalName]: capAmount };
+    } else if (!capAmount && capAmountDecimal) {
+      // CapAmount must be equal to CapAmountDecimal rounded up.
+      return { ...flight, [capAmountName]: Math.ceil(capAmountDecimal) };
+    } else {
+      return flight;
+    }
+  };
+
+/**
  * Map of preprocessors for any endpoints that require it.
  */
 const preProcessors: Map<string, Map<string, Processor[]>> = new Map([
@@ -46,18 +73,41 @@ const preProcessors: Map<string, Map<string, Processor[]>> = new Map([
       [
         'update',
         [
-          (flight: { [key: string]: any }) => {
-            let dailyCapAmount = flight['dailyCapAmount'];
-            return dailyCapAmount
-              ? { ...flight, dailyCapAmountDecimal: dailyCapAmount }
-              : flight;
-          },
-          (flight: { [key: string]: any }) => {
-            let lifetimeCapAmount = flight['lifetimeCapAmount'];
-            return lifetimeCapAmount
-              ? { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount }
-              : flight;
-          },
+          generateCapAmountProcessor({
+            capAmountName: 'dailyCapAmount',
+            capAmountDecimalName: 'dailyCapAmountDecimal',
+          }),
+          generateCapAmountProcessor({
+            capAmountName: 'lifetimeCapAmount',
+            capAmountDecimalName: 'lifetimeCapAmountDecimal',
+          }),
+          // (flight: { [key: string]: any }) => {
+          //   let dailyCapAmount = flight['dailyCapAmount'];
+          //   let dailyCapAmountDecimal = flight['dailyCapAmountDecimal'];
+          //   if (dailyCapAmount && !dailyCapAmountDecimal) {
+          //     return { ...flight, dailyCapAmountDecimal: dailyCapAmount };
+          //   } else if (!dailyCapAmount && dailyCapAmountDecimal) {
+          //     // CapAmount must be equal to CapAmountDecimal rounded up.
+          //     return { ...flight, dailyCapAmount: Math.ceil(dailyCapAmountDecimal) };
+          //   } else {
+          //     return flight;
+          //   }
+          // },
+          // (flight: { [key: string]: any }) => {
+          //   let lifetimeCapAmount = flight['lifetimeCapAmount'];
+          //   let lifetimeCapAmountDecimal = flight['lifetimeCapAmountDecimal'];
+          //   if (lifetimeCapAmount && !lifetimeCapAmountDecimal) {
+          //     return { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount };
+          //   } else if (!lifetimeCapAmount && lifetimeCapAmountDecimal) {
+          //     // CapAmount must be equal to CapAmountDecimal rounded up.
+          //     return {
+          //       ...flight,
+          //       lifetimeCapAmount: Math.ceil(lifetimeCapAmountDecimal),
+          //     };
+          //   } else {
+          //     return flight;
+          //   }
+          // },
         ],
       ],
     ]),
@@ -209,10 +259,7 @@ const buildRequestArgs = async (
   const p = preProcessors.get(obj)?.get(op);
 
   if (p) {
-    const processed = p.reduce(
-      (reduction, current) => current(reduction),
-      body
-    );
+    const processed = p.reduce((reduction, current) => current(reduction), body);
     body = processed;
   }
 
