@@ -50,16 +50,16 @@ const generateCapAmountProcessor =
     capAmountName: string;
     capAmountDecimalName: string;
   }) =>
-  (flight: { [key: string]: any }) => {
-    let capAmount = flight[capAmountName];
-    let capAmountDecimal = flight[capAmountDecimalName];
+  (entity: { [key: string]: any }) => {
+    let capAmount = entity[capAmountName];
+    let capAmountDecimal = entity[capAmountDecimalName];
     if (capAmount && !capAmountDecimal) {
-      return { ...flight, [capAmountDecimalName]: capAmount };
+      return { ...entity, [capAmountDecimalName]: capAmount };
     } else if (!capAmount && capAmountDecimal) {
       // CapAmount must be equal to CapAmountDecimal rounded up.
-      return { ...flight, [capAmountName]: Math.ceil(capAmountDecimal) };
+      return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
     } else {
-      return flight;
+      return entity;
     }
   };
 
