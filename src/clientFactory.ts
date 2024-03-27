@@ -31,6 +31,89 @@ const fetchBeforeSendOperations: { [key: string]: [string] } = {
   geoTargeting: ['update'],
 };
 
+/**
+ * Definition of processor for entity.
+ */
+type Processor = (entity: { [key: string]: any }) => { [key: string]: any };
+
+/**
+ * Generate cap amount processor with given field names.
+ * 
+ * @param param0 input parameters.
+ * @returns Cap amount processor.
+ */
+const generateCapAmountProcessor =
+  ({
+    capAmountName,
+    capAmountDecimalName,
+  }: {
+    capAmountName: string;
+    capAmountDecimalName: string;
+  }) =>
+  (entity: { [key: string]: any }) => {
+    let capAmount = entity[capAmountName];
+    let capAmountDecimal = entity[capAmountDecimalName];
+    if (capAmount && !capAmountDecimal) {
+      return { ...entity, [capAmountDecimalName]: capAmount };
+    } else if (!capAmount && capAmountDecimal) {
+      // CapAmount must be equal to CapAmountDecimal rounded up.
+      return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
+    } else {
+      return entity;
+    }
+  };
+
+/**
+ * Map of preprocessors for any endpoints that require it.
+ */
+const preProcessors: Map<string, Map<string, Processor[]>> = new Map([
+  [
+    'flight',
+    new Map<string, Processor[]>([
+      [
+        'update',
+        [
+          generateCapAmountProcessor({
+            capAmountName: 'dailyCapAmount',
+            capAmountDecimalName: 'dailyCapAmountDecimal',
+          }),
+          generateCapAmountProcessor({
+            capAmountName: 'lifetimeCapAmount',
+            capAmountDecimalName: 'lifetimeCapAmountDecimal',
+          }),
+          // (flight: { [key: string]: any }) => {
+          //   let dailyCapAmount = flight['dailyCapAmount'];
+          //   let dailyCapAmountDecimal = flight['dailyCapAmountDecimal'];
+          //   if (dailyCapAmount && !dailyCapAmountDecimal) {
+          //     return { ...flight, dailyCapAmountDecimal: dailyCapAmount };
+          //   } else if (!dailyCapAmount && dailyCapAmountDecimal) {
+          //     // CapAmount must be equal to CapAmountDecimal rounded up.
+          //     return { ...flight, dailyCapAmount: Math.ceil(dailyCapAmountDecimal) };
+          //   } else {
+          //     return flight;
+          //   }
+          // },
+          // (flight: { [key: string]: any }) => {
+          //   let lifetimeCapAmount = flight['lifetimeCapAmount'];
+          //   let lifetimeCapAmountDecimal = flight['lifetimeCapAmountDecimal'];
+          //   if (lifetimeCapAmount && !lifetimeCapAmountDecimal) {
+          //     return { ...flight, lifetimeCapAmountDecimal: lifetimeCapAmount };
+          //   } else if (!lifetimeCapAmount && lifetimeCapAmountDecimal) {
+          //     // CapAmount must be equal to CapAmountDecimal rounded up.
+          //     return {
+          //       ...flight,
+          //       lifetimeCapAmount: Math.ceil(lifetimeCapAmountDecimal),
+          //     };
+          //   } else {
+          //     return flight;
+          //   }
+          // },
+        ],
+      ],
+    ]),
+  ],
+]);
+
 export interface ClientFactoryOptions {
   specifications: Array<OpenAPIV3.Document>;
   apiKey: string;
@@ -172,6 +255,14 @@ const buildRequestArgs = async (
     );
   }
 
+  // We need to handle any pre-processing that is required.
+  const p = preProcessors.get(obj)?.get(op);
+
+  if (p) {
+    const processed = p.reduce((reduction, current) => current(reduction), body);
+    body = processed;
+  }
+
   if (fetchBeforeSendOperations[obj] && fetchBeforeSendOperations[obj].includes(op)) {
     let c = await client;
     logger('debug', 'Fetching existing object before performing update', originalBody);
@@ -184,15 +275,15 @@ const buildRequestArgs = async (
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
-        type: 'object',
-        required: ['Id'],
-        properties: { Id: { type: 'integer', format: 'int32' } },
-      }
+          type: 'object',
+          required: ['Id'],
+          properties: { Id: { type: 'integer', format: 'int32' } },
+        }
       : {
-        type: 'object',
-        required: ['id'],
-        properties: { id: { type: 'integer', format: 'int32' } },
-      };
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'integer', format: 'int32' } },
+        };
 
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
@@ -226,11 +317,7 @@ const buildRequestArgs = async (
     if (validationResult.form == undefined) {
       logger('error', 'Request body is invalid');
     } else {
-      logger(
-        'error',
-        'Request body is invalid',
-        validationResult.form.validationErrors
-      );
+      logger('error', 'Request body is invalid', validationResult.form.validationErrors);
     }
 
     throw 'Request body is invalid';
@@ -339,9 +426,9 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
               ...requestArgs,
               headers: {
                 ...requestArgs.headers,
-                'X-Adzerk-ApiKey': undefined
-              }
-            }
+                'X-Adzerk-ApiKey': undefined,
+              },
+            },
           });
           let ir = await fetch(href, requestArgs);
           if (ir.status == 429) {
@@ -356,10 +443,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
               ? 'full'
               : 'none',
           retry: async (err, attemptNumber) => {
-            logger(
-              'info',
-              `Request was rate limited. This was attempt ${attemptNumber}`
-            );
+            logger('info', `Request was rate limited. This was attempt ${attemptNumber}`);
             return err.code === 429;
           },
         }
