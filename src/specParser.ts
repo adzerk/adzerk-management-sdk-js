@@ -127,12 +127,12 @@ export const parseSpecifications = async (
   );
 
   for (let key of Object.keys(paths)) {
-    let p = paths[key];
+    let path = paths[key];
 
-    let pathParameters = p.parameters || [];
+    let pathParameters = path?.parameters || [];
 
-    for (let verb of Object.keys(p).filter((k) => k !== 'parameters') as Array<Verb>) {
-      let o = (p as any)[verb] as OpenAPIV3.OperationObject;
+    for (let verb of Object.keys(path || {}).filter((k) => k !== 'parameters') as Array<Verb>) {
+      let o = (path as any)[verb] as OpenAPIV3.OperationObject;
 
       (o.tags || []).forEach((t) => {
         let k = camelcase(t);
