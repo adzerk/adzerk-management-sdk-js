@@ -50,18 +50,18 @@ const generateCapAmountProcessor =
     capAmountName: string;
     capAmountDecimalName: string;
   }) =>
-  (entity: { [key: string]: any }) => {
-    let capAmount = entity[capAmountName];
-    let capAmountDecimal = entity[capAmountDecimalName];
-    if (capAmount && !capAmountDecimal) {
-      return { ...entity, [capAmountDecimalName]: capAmount };
-    } else if (!capAmount && capAmountDecimal) {
-      // CapAmount must be equal to CapAmountDecimal rounded up.
-      return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
-    } else {
-      return entity;
-    }
-  };
+    (entity: { [key: string]: any }) => {
+      let capAmount = entity[capAmountName];
+      let capAmountDecimal = entity[capAmountDecimalName];
+      if (capAmount && !capAmountDecimal) {
+        return { ...entity, [capAmountDecimalName]: capAmount };
+      } else if (!capAmount && capAmountDecimal) {
+        // CapAmount must be equal to CapAmountDecimal rounded up.
+        return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
+      } else {
+        return entity;
+      }
+    };
 
 /**
  * Map of preprocessors for any endpoints that require it.
@@ -275,15 +275,15 @@ const buildRequestArgs = async (
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
-          type: 'object',
-          required: ['Id'],
-          properties: { Id: { type: 'integer', format: 'int32' } },
-        }
+        type: 'object',
+        required: ['Id'],
+        properties: { Id: { type: 'integer', format: 'int32' } },
+      }
       : {
-          type: 'object',
-          required: ['id'],
-          properties: { id: { type: 'integer', format: 'int32' } },
-        };
+        type: 'object',
+        required: ['id'],
+        properties: { id: { type: 'integer', format: 'int32' } },
+      };
 
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
@@ -454,8 +454,8 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
       }
 
       if (![200, 201].includes(r.status)) {
-        const responseBody =  await r.json();
-        
+        const responseBody = await r.json();
+
         logger('debug', 'Received the following response from the Adzerk API', {
           status: r.status,
           body: responseBody,
@@ -471,18 +471,18 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
           status: r.status,
           body: responseBody,
         });
-      
+
         return convertKeysToCamelcase(responseBody);
       }
 
       let callback =
         (qOpts && qOpts.callback) || ((acc: Array<any>, o: any) => (acc.push(o), acc));
 
-      let result = await handleResponseStream(
-        r.body,
-        callback,
-        (qOpts && qOpts.initialValue) || []
-      );
+      let result = await handleResponseStream({
+        body: r.body,
+        callback: callback,
+        initialValue: (qOpts && qOpts.initialValue) || []
+      });
 
       let converted = convertKeysToCamelcase(result);
 
@@ -495,44 +495,50 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   };
 }
 
-let handleResponseStream = async <TCurr, TAcc>(
-  body: NodeJS.ReadableStream,
+let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
+  body: NodeJS.ReadableStream | null,
   callback: any,
   initialValue: TAcc
-) => {
+}) => {
   let buffer = Buffer.alloc(0);
 
   return new Promise((resolve, reject) => {
     let accumulator = initialValue;
-    body.on('data', (d) => {
-      buffer = Buffer.concat([buffer, d]);
-      try {
-        buffer
-          .toString()
-          .trim()
-          .split('\n')
-          .forEach((l) => {
-            try {
-              let obj = convertKeysToCamelcase(JSON.parse(l));
-              accumulator = callback(accumulator, obj);
-              buffer = Buffer.alloc(0);
-            } catch {
-              buffer = Buffer.from(l);
-              return;
-            }
-          });
-      } catch (e) {
-        reject(e);
-      }
-    });
 
-    body.on('end', () => resolve(accumulator));
+    if (body !== null) {
+      body.on('data', (d) => {
+        buffer = Buffer.concat([buffer, d]);
+        try {
+          buffer
+            .toString()
+            .trim()
+            .split('\n')
+            .forEach((l) => {
+              try {
+                let obj = convertKeysToCamelcase(JSON.parse(l));
+                accumulator = callback(accumulator, obj);
+                buffer = Buffer.alloc(0);
+              } catch {
+                buffer = Buffer.from(l);
+                return;
+              }
+            });
+        } catch (e) {
+          reject(e);
+        }
+      });
 
-    body.on('close', () => resolve(accumulator));
+      body.on('end', () => resolve(accumulator));
 
-    body.on('finish', () => resolve(accumulator));
+      body.on('close', () => resolve(accumulator));
 
-    body.on('error', (e) => reject(e));
+      body.on('finish', () => resolve(accumulator));
+
+      body.on('error', (e) => reject(e));
+    }
+    else {
+      reject('Provided body was null.');
+    }
   });
 };
 
