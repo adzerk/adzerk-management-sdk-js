@@ -4,7 +4,7 @@
   "description": "JavaScript SDK for Adzerk's Management API",
   "main": "lib/index.js",
   "engines": {
-      "node": "=20.16.0"
+      "node": ">=18.x"
   },
   "scripts": {
     "test": "jest --passWithNoTests",
