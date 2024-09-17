@@ -6,6 +6,7 @@
     "module": "commonjs",
     "outDir": "lib",
     "rootDir": "src",
+    "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
     "target": "es5",
