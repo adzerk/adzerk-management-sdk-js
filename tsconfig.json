@@ -2,14 +2,19 @@
   "compilerOptions": {
     "declaration": true,
     "esModuleInterop": true,
+    "moduleResolution": "node",
     "lib": ["ES2019", "ES2019.Array"],
-    "module": "commonjs",
+    "module": "ESNext",
     "outDir": "lib",
     "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "target": "es5",
-    "types": ["node", "jest"]
+    "target": "ESNext",
+    "types": ["node", "jest"],
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
   }
 }
