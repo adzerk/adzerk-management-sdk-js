@@ -1,12 +1,12 @@
 import camelcase from 'camelcase';
 import { OpenAPIV3 } from 'openapi-types';
-import { ValidatorFactory, wrapNullable } from './';
-import validatorFactory from '../validatorFactory';
 import validate, {
-  ValidationResult,
   ComplexValidationResult,
+  ValidationResult,
   Validator,
-} from 'strickland';
+} from 'strickland-esm';
+import validatorFactory from '../validatorFactory';
+import { ValidatorFactory, wrapNullable } from './';
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);

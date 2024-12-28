@@ -1,12 +1,12 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { Validator, ValidationResult, ComplexValidationResult } from 'strickland';
+import { ComplexValidationResult, ValidationResult, Validator } from 'strickland-esm';
 
-import integer from './integer';
-import boolean from './boolean';
-import number from './number';
-import string from './string';
-import object from './object';
 import array from './array';
+import boolean from './boolean';
+import integer from './integer';
+import number from './number';
+import object from './object';
+import string from './string';
 
 export interface ValidatorMap {
   [key: string]: ValidatorFactory;

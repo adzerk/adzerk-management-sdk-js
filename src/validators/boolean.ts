@@ -1,6 +1,6 @@
-import camelcase from "camelcase";
-import { Validator } from "strickland";
-import { ValidatorFactory, wrapNullable } from "./";
+import camelcase from 'camelcase';
+import { Validator } from 'strickland-esm';
+import { ValidatorFactory, wrapNullable } from './';
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);
@@ -10,7 +10,7 @@ const factory: ValidatorFactory = (schema, propertyName) => {
       schema,
       camelCasePropertyName,
       (v: any) =>
-        typeof v === "boolean" || {
+        typeof v === 'boolean' || {
           isValid: false,
           message: `${camelCasePropertyName} must be a valid boolean`,
         }

@@ -1,10 +1,10 @@
 import camelcase from 'camelcase';
-import isValid from 'date-fns/isValid';
-import parseJSON from 'date-fns/parseJSON';
-import { Validator } from 'strickland';
+import isValid from 'date-fns/isValid/index.js';
+import parseJSON from 'date-fns/parseJSON/index.js';
+import { Validator } from 'strickland-esm';
 
-import { ValidatorFactory, wrapNullable } from './';
 import { isStream } from '../utils';
+import { ValidatorFactory, wrapNullable } from './';
 
 const factory: ValidatorFactory = (schema, propertyName) => {
   let camelCasePropertyName = camelcase(propertyName);

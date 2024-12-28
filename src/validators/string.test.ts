@@ -1,7 +1,7 @@
 import 'jest';
 import { OpenAPIV3 } from 'openapi-types';
+import validate, { ComplexValidationResult } from 'strickland-esm';
 import factory from './string';
-import validate, { ComplexValidationResult } from 'strickland';
 
 test('string validation succeeds if nullable enum and given null', () => {
   let schema: OpenAPIV3.SchemaObject = {
