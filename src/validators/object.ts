@@ -1,7 +1,8 @@
-import { form, Validator } from 'strickland';
-import { OpenAPIV3 } from 'openapi-types';
 import camelcase from 'camelcase';
+import { OpenAPIV3 } from 'openapi-types';
+import { form, Validator } from 'strickland-esm';
 import { ValidatorFactory } from '.';
+
 
 const factory: ValidatorFactory = (schema, _propertyName, pf): Validator => {
   if (pf == undefined) {

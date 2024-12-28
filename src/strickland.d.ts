@@ -1,4 +1,4 @@
-declare module "strickland" {
+declare module 'strickland-esm' {
   export type FormValidationResult = {
     isComplete: boolean;
     validationResults?: any;

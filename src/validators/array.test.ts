@@ -1,7 +1,7 @@
 import 'jest';
 import { OpenAPIV3 } from 'openapi-types';
+import validate, { ComplexValidationResult } from 'strickland-esm';
 import factory from './array';
-import validate, { ComplexValidationResult } from 'strickland';
 
 test('array validation succeeds if nullable and given null', () => {
   let schema: OpenAPIV3.SchemaObject = {

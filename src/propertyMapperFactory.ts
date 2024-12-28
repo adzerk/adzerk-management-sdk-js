@@ -1,10 +1,10 @@
 import camelcase from 'camelcase';
-import mapObject from 'map-obj';
-import format from 'date-fns/format';
-import parseJSON from 'date-fns/parseJSON';
-import formatRFC3339 from 'date-fns/formatRFC3339';
-import { OpenAPIV3 } from 'openapi-types';
+import format from 'date-fns/format/index.js';
+import formatRFC3339 from 'date-fns/formatRFC3339/index.js';
+import parseJSON from 'date-fns/parseJSON/index.js';
 import fsl from 'fs';
+import mapObject from 'map-obj';
+import { OpenAPIV3 } from 'openapi-types';
 import { LoggerFunc } from '.';
 
 let fs = fsl.promises;

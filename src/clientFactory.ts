@@ -1,20 +1,20 @@
-import { backOff } from 'exponential-backoff';
 import camelcase from 'camelcase';
-import fetch, { RequestInit, HeadersInit } from 'node-fetch';
-import http, { request } from 'http';
+import { backOff } from 'exponential-backoff';
+import http from 'http';
 import https from 'https';
-import { OpenAPI, OpenAPIV3 } from 'openapi-types';
-import validate from 'strickland';
+import fetch, { RequestInit } from 'node-fetch';
+import { OpenAPIV3 } from 'openapi-types';
+import validate from 'strickland-esm';
 import { URL } from 'url';
 
-import { LoggerFunc } from '.';
-import { parseSpecifications, SecuritySchema, Operation, Method } from './specParser';
-import validatorFactory from './validatorFactory';
-import propertyMapperFactory from './propertyMapperFactory';
-import bodySerializerFactory from './bodySerializerFactory';
-import { isComplexValidationResult, isBooleanValidationResult } from './validators';
 import FormData from 'form-data';
+import { LoggerFunc } from '.';
+import bodySerializerFactory from './bodySerializerFactory';
+import propertyMapperFactory from './propertyMapperFactory';
+import { Method, Operation, parseSpecifications, SecuritySchema } from './specParser';
 import { convertKeysToCamelcase } from './utils';
+import validatorFactory from './validatorFactory';
+import { isBooleanValidationResult, isComplexValidationResult } from './validators';
 
 const fetchBeforeSendOperations: { [key: string]: [string] } = {
   advertiser: ['update'],
@@ -38,7 +38,7 @@ type Processor = (entity: { [key: string]: any }) => { [key: string]: any };
 
 /**
  * Generate cap amount processor with given field names.
- * 
+ *
  * @param param0 input parameters.
  * @returns Cap amount processor.
  */
