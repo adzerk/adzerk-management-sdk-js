@@ -1,6 +1,5 @@
 import { backOff } from 'exponential-backoff';
 import camelcase from 'camelcase';
-import fetch, { RequestInit, HeadersInit } from 'node-fetch';
 import http, { request } from 'http';
 import https from 'https';
 import { OpenAPI, OpenAPIV3 } from 'openapi-types';
@@ -217,7 +216,6 @@ const buildRequestArgs = async (
   client: Client | PromiseLike<Client>,
   headers: Headers,
   method: Method,
-  agent: http.Agent,
   obj: string,
   op: string,
   body: any,
@@ -225,7 +223,7 @@ const buildRequestArgs = async (
   logger: LoggerFunc,
   originalBody: any
 ) => {
-  let requestArgs: RequestInit = { headers, method, agent };
+  let requestArgs: RequestInit = { headers, method, keepalive: true, };
   let schema = operation.bodySchema;
 
   if (schema == undefined || !schema) {
@@ -351,10 +349,6 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   let host = opts.host || 'api.adzerk.net';
   let port = opts.port || 443;
 
-  let agent = new (protocol === 'https' ? https : http).Agent({
-    keepAlive: true,
-  });
-
   return {
     async run(obj, op, body, qOpts) {
       let originalBody = body ? JSON.parse(JSON.stringify(body)) : null;
@@ -407,7 +401,6 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         this,
         headers,
         operation.method,
-        agent,
         obj,
         op,
         body,
@@ -496,7 +489,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
 }
 
 let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
-  body: NodeJS.ReadableStream | null,
+  body: ReadableStream | null,
   callback: any,
   initialValue: TAcc
 }) => {
@@ -506,35 +499,30 @@ let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
     let accumulator = initialValue;
 
     if (body !== null) {
-      body.on('data', (d) => {
-        buffer = Buffer.concat([buffer, d]);
-        try {
-          buffer
-            .toString()
-            .trim()
-            .split('\n')
-            .forEach((l) => {
-              try {
-                let obj = convertKeysToCamelcase(JSON.parse(l));
-                accumulator = callback(accumulator, obj);
-                buffer = Buffer.alloc(0);
-              } catch {
-                buffer = Buffer.from(l);
-                return;
-              }
-            });
-        } catch (e) {
-          reject(e);
+      body.getReader().read().then(({ done, value }) => {
+        if (done) {
+          resolve(accumulator);
         }
-      });
 
-      body.on('end', () => resolve(accumulator));
+        buffer = Buffer.concat([buffer, value]);
 
-      body.on('close', () => resolve(accumulator));
-
-      body.on('finish', () => resolve(accumulator));
-
-      body.on('error', (e) => reject(e));
+        buffer
+          .toString()
+          .trim()
+          .split('\n')
+          .forEach((l) => {
+            try {
+              let obj = convertKeysToCamelcase(JSON.parse(l));
+              accumulator = callback(accumulator, obj);
+              buffer = Buffer.alloc(0);
+            } catch {
+              buffer = Buffer.from(l);
+              return;
+            }
+          });
+      }).catch(e => {
+        reject(e);
+      })
     }
     else {
       reject('Provided body was null.');
