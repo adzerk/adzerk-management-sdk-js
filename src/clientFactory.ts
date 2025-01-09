@@ -496,12 +496,14 @@ let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
   let buffer = Buffer.alloc(0);
 
   return new Promise((resolve, reject) => {
-    let accumulator = initialValue;
-
     if (body !== null) {
-      body.getReader().read().then(({ done, value }) => {
+      let accumulator = initialValue;
+
+      const reader = body.getReader();
+
+      reader.read().then(function processChunk({ done, value }): any {
         if (done) {
-          resolve(accumulator);
+          return resolve(accumulator);
         }
 
         buffer = Buffer.concat([buffer, value]);
@@ -520,6 +522,8 @@ let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
               return;
             }
           });
+
+          return reader.read().then(processChunk);
       }).catch(e => {
         reject(e);
       })
