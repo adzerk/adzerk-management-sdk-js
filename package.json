@@ -1,6 +1,6 @@
 {
   "name": "@adzerk/management-sdk",
-  "version": "1.0.0-beta.24",
+  "version": "1.0.0-beta.25",
   "description": "JavaScript SDK for Adzerk's Management API",
   "main": "lib/index.js",
   "engines": {
@@ -28,7 +28,6 @@
   "devDependencies": {
     "@babel/preset-env": "^7.25.4",
     "@types/array.prototype.flatmap": "^1.2.2",
-    "@types/camelcase": "^5.2.4",
     "@types/concat-stream": "^2.0.0",
     "@types/jest": "^26.0.8",
     "@types/node": "^22.5.4",
