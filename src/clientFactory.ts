@@ -5,6 +5,7 @@ import https from 'https';
 import { OpenAPI, OpenAPIV3 } from 'openapi-types';
 import validate from 'strickland';
 import { URL } from 'url';
+import fetch, { RequestInit } from 'node-fetch';
 
 import { LoggerFunc } from '.';
 import { parseSpecifications, SecuritySchema, Operation, Method } from './specParser';
@@ -37,7 +38,7 @@ type Processor = (entity: { [key: string]: any }) => { [key: string]: any };
 
 /**
  * Generate cap amount processor with given field names.
- * 
+ *
  * @param param0 input parameters.
  * @returns Cap amount processor.
  */
@@ -49,18 +50,18 @@ const generateCapAmountProcessor =
     capAmountName: string;
     capAmountDecimalName: string;
   }) =>
-    (entity: { [key: string]: any }) => {
-      let capAmount = entity[capAmountName];
-      let capAmountDecimal = entity[capAmountDecimalName];
-      if (capAmount && !capAmountDecimal) {
-        return { ...entity, [capAmountDecimalName]: capAmount };
-      } else if (!capAmount && capAmountDecimal) {
-        // CapAmount must be equal to CapAmountDecimal rounded up.
-        return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
-      } else {
-        return entity;
-      }
-    };
+  (entity: { [key: string]: any }) => {
+    let capAmount = entity[capAmountName];
+    let capAmountDecimal = entity[capAmountDecimalName];
+    if (capAmount && !capAmountDecimal) {
+      return { ...entity, [capAmountDecimalName]: capAmount };
+    } else if (!capAmount && capAmountDecimal) {
+      // CapAmount must be equal to CapAmountDecimal rounded up.
+      return { ...entity, [capAmountName]: Math.ceil(capAmountDecimal) };
+    } else {
+      return entity;
+    }
+  };
 
 /**
  * Map of preprocessors for any endpoints that require it.
@@ -216,6 +217,7 @@ const buildRequestArgs = async (
   client: Client | PromiseLike<Client>,
   headers: Headers,
   method: Method,
+  agent: http.Agent,
   obj: string,
   op: string,
   body: any,
@@ -223,7 +225,7 @@ const buildRequestArgs = async (
   logger: LoggerFunc,
   originalBody: any
 ) => {
-  let requestArgs: RequestInit = { headers, method, keepalive: true, };
+  let requestArgs: RequestInit = { headers, method, agent };
   let schema = operation.bodySchema;
 
   if (schema == undefined || !schema) {
@@ -273,15 +275,15 @@ const buildRequestArgs = async (
   let buildIdOnlySchema = (isCapitalized: boolean): OpenAPIV3.NonArraySchemaObject =>
     isCapitalized
       ? {
-        type: 'object',
-        required: ['Id'],
-        properties: { Id: { type: 'integer', format: 'int32' } },
-      }
+          type: 'object',
+          required: ['Id'],
+          properties: { Id: { type: 'integer', format: 'int32' } },
+        }
       : {
-        type: 'object',
-        required: ['id'],
-        properties: { id: { type: 'integer', format: 'int32' } },
-      };
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'integer', format: 'int32' } },
+        };
 
   let serializer = bodySerializerFactory(contentType);
   let propertyNames = Object.keys(schema[contentType].properties || {});
@@ -349,6 +351,10 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   let host = opts.host || 'api.adzerk.net';
   let port = opts.port || 443;
 
+  let agent = new (protocol === 'https' ? https : http).Agent({
+    keepAlive: true,
+  });
+
   return {
     async run(obj, op, body, qOpts) {
       let originalBody = body ? JSON.parse(JSON.stringify(body)) : null;
@@ -401,6 +407,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
         this,
         headers,
         operation.method,
+        agent,
         obj,
         op,
         body,
@@ -474,7 +481,7 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
       let result = await handleResponseStream({
         body: r.body,
         callback: callback,
-        initialValue: (qOpts && qOpts.initialValue) || []
+        initialValue: (qOpts && qOpts.initialValue) || [],
       });
 
       let converted = convertKeysToCamelcase(result);
@@ -488,47 +495,51 @@ export async function buildClient(opts: ClientFactoryOptions): Promise<Client> {
   };
 }
 
-let handleResponseStream = async <TAcc>({ body, callback, initialValue }: {
-  body: ReadableStream | null,
-  callback: any,
-  initialValue: TAcc
+let handleResponseStream = async <TAcc>({
+  body,
+  callback,
+  initialValue,
+}: {
+  body: NodeJS.ReadableStream | null;
+  callback: any;
+  initialValue: TAcc;
 }) => {
   let buffer = Buffer.alloc(0);
 
   return new Promise((resolve, reject) => {
+    let accumulator = initialValue;
+
     if (body !== null) {
-      let accumulator = initialValue;
-
-      const reader = body.getReader();
-
-      reader.read().then(function processChunk({ done, value }): any {
-        if (done) {
-          return resolve(accumulator);
+      body.on('data', (d) => {
+        buffer = Buffer.concat([buffer, d]);
+        try {
+          buffer
+            .toString()
+            .trim()
+            .split('\n')
+            .forEach((l) => {
+              try {
+                let obj = convertKeysToCamelcase(JSON.parse(l));
+                accumulator = callback(accumulator, obj);
+                buffer = Buffer.alloc(0);
+              } catch {
+                buffer = Buffer.from(l);
+                return;
+              }
+            });
+        } catch (e) {
+          reject(e);
         }
+      });
 
-        buffer = Buffer.concat([buffer, value]);
+      body.on('end', () => resolve(accumulator));
 
-        buffer
-          .toString()
-          .trim()
-          .split('\n')
-          .forEach((l) => {
-            try {
-              let obj = convertKeysToCamelcase(JSON.parse(l));
-              accumulator = callback(accumulator, obj);
-              buffer = Buffer.alloc(0);
-            } catch {
-              buffer = Buffer.from(l);
-              return;
-            }
-          });
+      body.on('close', () => resolve(accumulator));
 
-          return reader.read().then(processChunk);
-      }).catch(e => {
-        reject(e);
-      })
-    }
-    else {
+      body.on('finish', () => resolve(accumulator));
+
+      body.on('error', (e) => reject(e));
+    } else {
       reject('Provided body was null.');
     }
   });
